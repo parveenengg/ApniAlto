@@ -737,7 +737,7 @@
     </div>
 
     <div class="controls-hint" id="controls-hint">
-        🎮 <strong>Controls:</strong> <kbd>W</kbd>/<kbd>S</kbd> Drive • <kbd>A</kbd>/<kbd>D</kbd> Steer • <kbd>Space</kbd> Jump over obstacles! 🦘
+        🎮 <strong>Controls:</strong> <kbd>W</kbd>/<kbd>S</kbd> Drive • <kbd>A</kbd>/<kbd>D</kbd> Steer • <kbd>Space</kbd> Jump (Double-jump!) • <kbd>Shift</kbd> Drift • Double-tap <kbd>W</kbd> Boost 🦘
     </div>
 
     <div class="ingame-top-nav" id="ingame-top-nav">
@@ -811,6 +811,30 @@
             gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.8);
             noise.connect(filter); filter.connect(gain); gain.connect(audioCtx.destination); noise.start();
         }
+        
+        let throttleOsc = null;
+        let throttleGain = null;
+        function initThrottleSound() {
+            initAudio(); if (!audioCtx || throttleOsc) return;
+            throttleOsc = audioCtx.createOscillator();
+            throttleGain = audioCtx.createGain();
+            throttleOsc.type = 'sawtooth';
+            throttleOsc.frequency.value = 60;
+            throttleGain.gain.value = 0;
+            throttleOsc.connect(throttleGain);
+            throttleGain.connect(audioCtx.destination);
+            throttleOsc.start();
+        }
+        function updateThrottleSound() {
+            if (!throttleOsc) return;
+            let absSpeed = Math.abs(vehicleState.speed);
+            throttleOsc.frequency.value = 60 + (absSpeed * 400);
+            throttleGain.gain.value = absSpeed > 0.01 ? 0.1 : 0.0;
+            if (boostTimer > 0) {
+                throttleOsc.frequency.value += 150;
+                throttleGain.gain.value = 0.2;
+            }
+        }
         function playVictorySound() {
             initAudio(); if (!audioCtx) return;
             [523.25, 659.25, 783.99, 1046.50].forEach((freq, index) => {
@@ -877,11 +901,19 @@
         let attachedWheels = [], detachedPhysicsObjects = [], explosionParticles = [], coins = [], obstacles = [], checkpointRings = [], finishZone;
         let score = 0, totalCoins = 12, maxHealth = 100, health = 100, isPlaying = false, isLevelComplete = false, isExploded = false, lastGlobalHitTime = 0;
         let currentCheckpointIdx = 0, totalCheckpointsCount = 10, gameTimer = 0, timerInterval = null;
-        const vehicleState = { speed: 0, maxSpeed: 0.35, acceleration: 0.015, deceleration: 0.01, turnSpeed: 0.035, angle: 0, x: 0, y: 0, z: -10, velocityY: 0 };
+        const vehicleState = { speed: 0, maxSpeed: 0.35, acceleration: 0.015, deceleration: 0.01, turnSpeed: 0.035, angle: 0, x: 0, y: 0, z: -10, velocityY: 0, jumpCount: 0, visualAngle: 0 };
         const keys = {};
+        let lastWTapTime = 0;
+        let wWasReleased = true;
+        let boostTimer = 0;
+
 
         function triggerJump() {
-            if (vehicleState.y <= 0.05) { vehicleState.velocityY = 0.28; playJumpSound(); }
+            if (vehicleState.jumpCount < 2) { 
+                vehicleState.velocityY = 0.28; 
+                playJumpSound(); 
+                vehicleState.jumpCount++;
+            }
         }
 
         function init3D() {
@@ -911,12 +943,27 @@
             createFinishZone();
 
             window.addEventListener('keydown', (e) => {
+                initThrottleSound();
                 if (e.key === ' ' || e.code === 'Space') { keys['space'] = true; triggerJump(); e.preventDefault(); }
-                else { keys[e.key.toLowerCase()] = true; }
+                else { 
+                    let k = e.key.toLowerCase();
+                    keys[k] = true; 
+                    if (k === 'w' || k === 'arrowup') {
+                        if (wWasReleased) {
+                            if (Date.now() - lastWTapTime < 300) { boostTimer = 60; }
+                            lastWTapTime = Date.now();
+                            wWasReleased = false;
+                        }
+                    }
+                }
             });
             window.addEventListener('keyup', (e) => {
                 if (e.key === ' ' || e.code === 'Space') { keys['space'] = false; }
-                else { keys[e.key.toLowerCase()] = false; }
+                else { 
+                    let k = e.key.toLowerCase();
+                    keys[k] = false; 
+                    if (k === 'w' || k === 'arrowup') { wWasReleased = true; }
+                }
             });
             window.addEventListener('resize', onWindowResize);
 
@@ -1056,7 +1103,16 @@
         function updateVehicle() {
             const currentCar = carsCatalog.find(c => c.id === activeCarId) || carsCatalog[0];
             const wheelFactor = attachedWheels.length > 0 ? (attachedWheels.length / 4.0) : 1.0;
-            const effectiveMaxSpeed = (currentCar.speed * 0.055) * (0.3 + 0.7 * wheelFactor);
+            let effectiveMaxSpeed = (currentCar.speed * 0.055) * (0.3 + 0.7 * wheelFactor);
+            
+            // Apply Boost
+            if (boostTimer > 0) {
+                boostTimer--;
+                effectiveMaxSpeed *= 1.6;
+                vehicleState.acceleration = 0.035;
+            } else {
+                vehicleState.acceleration = 0.015;
+            }
 
             if (keys['w'] || keys['arrowup']) vehicleState.speed = Math.min(vehicleState.speed + vehicleState.acceleration, effectiveMaxSpeed);
             else if (keys['s'] || keys['arrowdown']) vehicleState.speed = Math.max(vehicleState.speed - vehicleState.acceleration, -effectiveMaxSpeed * 0.5);
@@ -1064,20 +1120,44 @@
                 if (vehicleState.speed > 0) vehicleState.speed = Math.max(0, vehicleState.speed - vehicleState.deceleration);
                 if (vehicleState.speed < 0) vehicleState.speed = Math.min(0, vehicleState.speed + vehicleState.deceleration);
             }
+            
+            // Drifting and Steering
+            let turnInput = 0;
+            if (keys['a'] || keys['arrowleft']) turnInput = 1;
+            if (keys['d'] || keys['arrowright']) turnInput = -1;
+            
             if (Math.abs(vehicleState.speed) > 0.01) {
                 const dir = Math.sign(vehicleState.speed);
-                if (keys['a'] || keys['arrowleft']) vehicleState.angle += vehicleState.turnSpeed * dir;
-                if (keys['d'] || keys['arrowright']) vehicleState.angle -= vehicleState.turnSpeed * dir;
+                vehicleState.visualAngle += vehicleState.turnSpeed * turnInput * dir;
             }
+            
+            if (keys['shift']) {
+                // Drift: slide slightly, angle turns sharper, move angle lags behind
+                vehicleState.angle += (vehicleState.visualAngle - vehicleState.angle) * 0.05;
+                vehicleState.turnSpeed = 0.05;
+            } else {
+                vehicleState.angle = vehicleState.visualAngle;
+                vehicleState.turnSpeed = 0.035;
+            }
+            
             vehicleState.y += vehicleState.velocityY;
-            if (vehicleState.y > 0) vehicleState.velocityY -= 0.014; else { vehicleState.y = 0; vehicleState.velocityY = 0; }
+            if (vehicleState.y > 0) {
+                vehicleState.velocityY -= 0.014; 
+            } else { 
+                vehicleState.y = 0; 
+                vehicleState.velocityY = 0; 
+                vehicleState.jumpCount = 0; // Reset jump on ground
+            }
+            
             vehicleState.x += Math.sin(vehicleState.angle) * vehicleState.speed;
             vehicleState.z += Math.cos(vehicleState.angle) * vehicleState.speed;
             vehicleState.x = Math.max(-28, Math.min(28, vehicleState.x));
             vehicleState.z = Math.max(-18, Math.min(138, vehicleState.z));
             car.position.set(vehicleState.x, vehicleState.y, vehicleState.z);
-            car.rotation.y = vehicleState.angle;
+            car.rotation.y = vehicleState.visualAngle;
             attachedWheels.forEach(w => w.rotation.x += vehicleState.speed * 2);
+            
+            updateThrottleSound();
         }
 
         function updateObstacles() {
