@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CAR RUSH - 3D Vehicle Coin Collector</title>
+    <title>CAR RUSH - Garage & 3D Vehicle Coin Collector</title>
     <style>
         * {
             box-sizing: border-box;
@@ -26,9 +26,7 @@
             left: 0;
         }
 
-        /* ---------------------------------------------------- */
-        /* CAR RUSH HOME SCREEN UI (Matching Reference Image)    */
-        /* ---------------------------------------------------- */
+        /* CAR RUSH HOME SCREEN UI */
         #home-screen-ui {
             position: absolute;
             top: 0;
@@ -109,10 +107,9 @@
             border-radius: 5px;
             overflow: hidden;
             border: 1px solid rgba(255, 255, 255, 0.1);
-            position: relative;
         }
         .xp-bar-fill {
-            width: 62.5%; /* 750 / 1200 */
+            width: 62.5%;
             height: 100%;
             background: linear-gradient(90deg, #3b82f6, #60a5fa);
         }
@@ -163,14 +160,9 @@
             justify-content: center;
             font-size: 16px;
             cursor: pointer;
-            transition: all 0.2s ease;
-        }
-        .social-btn:hover {
-            background: #374151;
-            color: #ffffff;
         }
 
-        /* Main Content Area */
+        /* Main Content */
         .main-content {
             flex: 1;
             display: flex;
@@ -179,7 +171,6 @@
             position: relative;
         }
 
-        /* Top Header Bar */
         .top-header {
             display: flex;
             justify-content: space-between;
@@ -236,7 +227,6 @@
             margin-left: 4px;
         }
 
-        /* TOP RIGHT SETTINGS GEAR BUTTON */
         .top-right-settings-btn {
             width: 44px;
             height: 44px;
@@ -257,7 +247,6 @@
             transform: rotate(45deg);
         }
 
-        /* Mode Cards Row */
         .mode-cards-container {
             display: flex;
             gap: 24px;
@@ -279,26 +268,15 @@
             box-shadow: 0 16px 32px rgba(0, 0, 0, 0.4);
             border: 3px solid rgba(255, 255, 255, 0.2);
             position: relative;
-            overflow: hidden;
         }
         .mode-card:hover {
             transform: translateY(-10px) scale(1.03);
-            box-shadow: 0 24px 48px rgba(0, 0, 0, 0.6);
             border-color: #ffffff;
         }
 
-        /* Free Play Green Card */
-        .mode-card.free-play {
-            background: linear-gradient(180deg, #22c55e 0%, #15803d 100%);
-        }
-        /* Checkpoints Orange Card */
-        .mode-card.checkpoints {
-            background: linear-gradient(180deg, #f97316 0%, #c2410c 100%);
-        }
-        /* Sprint Mode Purple Card */
-        .mode-card.sprint {
-            background: linear-gradient(180deg, #8b5cf6 0%, #6d28d9 100%);
-        }
+        .mode-card.free-play { background: linear-gradient(180deg, #22c55e 0%, #15803d 100%); }
+        .mode-card.checkpoints { background: linear-gradient(180deg, #f97316 0%, #c2410c 100%); }
+        .mode-card.sprint { background: linear-gradient(180deg, #8b5cf6 0%, #6d28d9 100%); }
 
         .mode-title {
             font-size: 24px;
@@ -306,21 +284,17 @@
             color: #ffffff;
             font-style: italic;
             margin-bottom: 20px;
-            text-shadow: 0 2px 6px rgba(0,0,0,0.4);
         }
         .mode-icon-circle {
             width: 90px;
             height: 90px;
             border-radius: 50%;
             background: rgba(255, 255, 255, 0.2);
-            backdrop-filter: blur(4px);
-            border: 3px solid rgba(255, 255, 255, 0.4);
             display: flex;
             align-items: center;
             justify-content: center;
             font-size: 42px;
             margin-bottom: 20px;
-            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
         }
         .mode-desc {
             color: rgba(255, 255, 255, 0.9);
@@ -337,10 +311,8 @@
             font-size: 13px;
             padding: 6px 16px;
             border-radius: 12px;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
         }
 
-        /* Bottom Right Action Buttons */
         .bottom-actions {
             position: absolute;
             bottom: 24px;
@@ -361,16 +333,12 @@
             cursor: pointer;
             border: none;
             box-shadow: 0 6px 18px rgba(37, 99, 235, 0.4);
-            transition: all 0.2s ease;
         }
         .action-btn:hover {
             background: #1d4ed8;
-            transform: translateY(-2px);
         }
 
-        /* ---------------------------------------------------- */
-        /* IN-GAME HUD UI                                       */
-        /* ---------------------------------------------------- */
+        /* IN-GAME HUD UI */
         #hud {
             position: absolute;
             top: 20px;
@@ -403,7 +371,6 @@
             font-size: 24px;
             font-weight: 800;
             color: #ffd700;
-            text-shadow: 0 2px 4px rgba(0,0,0,0.5);
         }
         .health-bar-container {
             width: 180px;
@@ -448,7 +415,6 @@
             z-index: 10;
             opacity: 0;
             pointer-events: none;
-            transition: opacity 0.3s ease;
         }
         .controls-hint.active {
             opacity: 1;
@@ -460,11 +426,8 @@
             padding: 2px 8px;
             border-radius: 6px;
             border: 1px solid #64748b;
-            font-family: monospace;
-            font-size: 13px;
         }
 
-        /* In-Game Top Right Nav Buttons */
         .ingame-top-nav {
             position: absolute;
             top: 20px;
@@ -474,16 +437,13 @@
             z-index: 10;
             opacity: 0;
             pointer-events: none;
-            transition: opacity 0.3s ease;
         }
         .ingame-top-nav.active {
             opacity: 1;
             pointer-events: auto;
         }
 
-        /* ---------------------------------------------------- */
-        /* MODAL POPUPS (SETTINGS / LEVEL COMPLETE / GAME OVER) */
-        /* ---------------------------------------------------- */
+        /* MODAL POPUPS */
         .modal-backdrop {
             position: absolute;
             top: 0;
@@ -508,20 +468,17 @@
             background: #1e293b;
             border: 3px solid #3b82f6;
             border-radius: 24px;
-            padding: 36px 48px;
+            padding: 32px 40px;
             text-align: center;
             color: white;
             box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6);
-            max-width: 460px;
-            width: 90%;
+            max-width: 720px;
+            width: 92%;
             animation: modalPop 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
         .modal-card.game-over {
             border-color: #ef4444;
-        }
-        @keyframes modalPop {
-            0% { transform: scale(0.8); opacity: 0; }
-            100% { transform: scale(1); opacity: 1; }
+            max-width: 460px;
         }
         .modal-title {
             font-size: 32px;
@@ -529,11 +486,71 @@
             color: #4ade80;
             margin-bottom: 16px;
         }
-        .modal-card.game-over .modal-title {
-            color: #f87171;
+
+        /* GARAGE CARS GRID */
+        .garage-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 16px;
+            margin: 20px 0;
+            max-height: 420px;
+            overflow-y: auto;
+            padding-right: 6px;
+        }
+        .car-card {
+            background: #0f172a;
+            border: 2px solid #334155;
+            border-radius: 16px;
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+            position: relative;
+            transition: all 0.2s ease;
+        }
+        .car-card.selected {
+            border-color: #3b82f6;
+            background: #1e293b;
+            box-shadow: 0 0 16px rgba(59, 130, 246, 0.4);
+        }
+        .car-icon {
+            font-size: 40px;
+        }
+        .car-name {
+            font-weight: 800;
+            font-size: 18px;
+            color: #ffffff;
+        }
+        .car-cost {
+            font-weight: 700;
+            font-size: 14px;
+            color: #f59e0b;
+        }
+        .car-btn {
+            width: 100%;
+            padding: 8px 12px;
+            border-radius: 10px;
+            font-weight: 800;
+            font-size: 13px;
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .car-btn.equip {
+            background: #22c55e;
+            color: white;
+        }
+        .car-btn.equipped {
+            background: #3b82f6;
+            color: white;
+            cursor: default;
+        }
+        .car-btn.buy {
+            background: #f59e0b;
+            color: white;
         }
 
-        /* Settings Rows */
         .settings-row {
             display: flex;
             justify-content: space-between;
@@ -551,33 +568,18 @@
             display: flex;
             gap: 16px;
             justify-content: center;
-            margin-top: 24px;
+            margin-top: 20px;
         }
         .btn {
-            padding: 14px 28px;
+            padding: 12px 24px;
             border-radius: 12px;
-            font-size: 16px;
+            font-size: 15px;
             font-weight: 700;
             border: none;
             cursor: pointer;
-            transition: all 0.2s ease;
         }
-        .btn-primary {
-            background: #22c55e;
-            color: white;
-            box-shadow: 0 4px 14px rgba(34, 197, 94, 0.4);
-        }
-        .btn-primary:hover {
-            background: #16a34a;
-        }
-        .btn-secondary {
-            background: #ef4444;
-            color: white;
-            box-shadow: 0 4px 14px rgba(239, 68, 68, 0.4);
-        }
-        .btn-secondary:hover {
-            background: #dc2626;
-        }
+        .btn-primary { background: #22c55e; color: white; }
+        .btn-secondary { background: #ef4444; color: white; }
     </style>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
@@ -585,11 +587,8 @@
 <body>
     <div id="canvas-container"></div>
 
-    <!-- ---------------------------------------------------- -->
-    <!-- CAR RUSH HOME SCREEN UI                              -->
-    <!-- ---------------------------------------------------- -->
+    <!-- CAR RUSH HOME SCREEN UI -->
     <div id="home-screen-ui">
-        <!-- Sidebar -->
         <div class="sidebar">
             <div class="profile-card">
                 <div class="avatar-frame">👦</div>
@@ -604,10 +603,10 @@
 
             <div class="nav-menu">
                 <div class="nav-item active">🏠 HOME</div>
-                <div class="nav-item" onclick="alert('Garage: Select cartoon vehicle color!')">🚗 GARAGE</div>
+                <div class="nav-item" onclick="openGarageModal()">🚗 GARAGE</div>
                 <div class="nav-item" onclick="alert('Achievements: 12 Coins Collector Master!')">🏆 ACHIEVEMENTS</div>
                 <div class="nav-item" onclick="alert('Leaderboard: #1 Speedster07')">📊 LEADERBOARD</div>
-                <div class="nav-item" onclick="alert('Shop: Unlock New Vehicles & Power-ups!')">🛒 SHOP</div>
+                <div class="nav-item" onclick="openGarageModal()">🛒 SHOP</div>
             </div>
 
             <div class="sidebar-socials">
@@ -617,9 +616,7 @@
             </div>
         </div>
 
-        <!-- Main Content -->
         <div class="main-content">
-            <!-- Header Bar -->
             <div class="top-header">
                 <div class="logo-title">
                     <span class="logo-text">CAR RUSH</span>
@@ -628,7 +625,7 @@
 
                 <div class="header-currencies">
                     <div class="currency-pill">
-                        🟡 <span id="coin-currency">12,850</span>
+                        🪙 <span id="coin-currency">12,850</span>
                         <div class="plus-btn">+</div>
                     </div>
                     <div class="currency-pill">
@@ -643,9 +640,7 @@
                 </div>
             </div>
 
-            <!-- Mode Selection Cards -->
             <div class="mode-cards-container">
-                <!-- FREE PLAY (COIN COLLECTOR 3D MODE) -->
                 <div class="mode-card free-play" onclick="startFreePlayGame()">
                     <div class="mode-title">FREE PLAY</div>
                     <div class="mode-icon-circle">🏎️</div>
@@ -653,7 +648,6 @@
                     <div class="play-badge">TAP TO PLAY ▶</div>
                 </div>
 
-                <!-- CHECKPOINTS -->
                 <div class="mode-card checkpoints" onclick="startFreePlayGame()">
                     <div class="mode-title">CHECKPOINTS</div>
                     <div class="mode-icon-circle">📍</div>
@@ -661,7 +655,6 @@
                     <div class="play-badge">START RACE ▶</div>
                 </div>
 
-                <!-- SPRINT MODE -->
                 <div class="mode-card sprint" onclick="startFreePlayGame()">
                     <div class="mode-title">SPRINT MODE</div>
                     <div class="mode-icon-circle">⏱️</div>
@@ -670,17 +663,14 @@
                 </div>
             </div>
 
-            <!-- Bottom Right Action Buttons -->
             <div class="bottom-actions">
-                <button class="action-btn" onclick="alert('Profile: Speedster07 - Level 5')">👤 PROFILE</button>
+                <button class="action-btn" onclick="openGarageModal()">🚗 GARAGE</button>
                 <button class="action-btn" onclick="openSettingsModal()">⚙️ SETTINGS</button>
             </div>
         </div>
     </div>
 
-    <!-- ---------------------------------------------------- -->
-    <!-- IN-GAME HUD UI                                       -->
-    <!-- ---------------------------------------------------- -->
+    <!-- IN-GAME HUD UI -->
     <div id="hud">
         <div class="hud-card">
             <span class="score-text" id="score-display">Coins: 0 / 12</span>
@@ -703,9 +693,30 @@
         <div class="top-right-settings-btn" onclick="returnToHome()" title="Home Screen">🏠</div>
     </div>
 
+    <!-- ---------------------------------------------------- -->
+    <!-- GARAGE MODAL POPUP (5 CAR SELECTION MENU)             -->
+    <!-- ---------------------------------------------------- -->
+    <div class="modal-backdrop" id="garage-modal">
+        <div class="modal-card">
+            <div class="modal-title">🚗 CAR RUSH GARAGE 🚘</div>
+            <div style="font-size: 15px; color: #cbd5e1; margin-bottom: 12px;">
+                Available Coins: <strong style="color: #f59e0b;">🪙 <span id="garage-coin-display">12,850</span></strong>
+            </div>
+
+            <!-- CAR CATALOG GRID -->
+            <div class="garage-grid" id="garage-grid">
+                <!-- Cars will be dynamically rendered -->
+            </div>
+
+            <div class="btn-group">
+                <button class="btn btn-primary" onclick="closeGarageModal()">Done & Back to Home</button>
+            </div>
+        </div>
+    </div>
+
     <!-- SETTINGS MODAL POPUP -->
     <div class="modal-backdrop" id="settings-modal">
-        <div class="modal-card">
+        <div class="modal-card" style="max-width: 460px;">
             <div class="modal-title">⚙️ GAME SETTINGS</div>
             <div class="settings-row">
                 <span>Sound FX:</span>
@@ -727,7 +738,7 @@
 
     <!-- Level Complete Modal -->
     <div class="modal-backdrop" id="level-complete-modal">
-        <div class="modal-card">
+        <div class="modal-card" style="max-width: 460px;">
             <div class="modal-title">Level Complete! 🎉</div>
             <div class="modal-subtitle" id="final-score-text">Coins Collected: 12 / 12</div>
             <div class="btn-group">
@@ -750,7 +761,7 @@
     </div>
 
     <script>
-        // Web Audio Synthesizer
+        // Audio Synthesizer
         const AudioCtx = window.AudioContext || window.webkitAudioContext;
         let audioCtx = null;
 
@@ -848,9 +859,134 @@
             });
         }
 
+        // ----------------------------------------------------
+        // GARAGE VEHICLE CATALOG & UNLOCK SYSTEM
+        // ----------------------------------------------------
+        let userGoldCoins = 12850;
+
+        const garageCars = [
+            {
+                id: 'alto',
+                name: 'Alto',
+                cost: 0, // Free
+                unlocked: true,
+                icon: '🚗',
+                color: 0x06b6d4, // Cyan Hatchback
+                roofColor: 0xf8fafc,
+                type: 'compact',
+                desc: 'Reliable & lightweight compact car!'
+            },
+            {
+                id: 'verna',
+                name: 'Verna',
+                cost: 15,
+                unlocked: false,
+                icon: '🚘',
+                color: 0x2563eb, // Cobalt Blue Sedan
+                roofColor: 0x1e293b,
+                type: 'sedan',
+                desc: 'Sleek modern sedan with smooth drive!'
+            },
+            {
+                id: 'lamborghini',
+                name: 'Lamborghini',
+                cost: 50,
+                unlocked: false,
+                icon: '🏎️',
+                color: 0xeab308, // Yellow Supercar
+                roofColor: 0x0f172a,
+                type: 'supercar',
+                desc: 'Low-slung supercar with rear spoiler wing!'
+            },
+            {
+                id: 'mustang',
+                name: 'Mustang',
+                cost: 150,
+                unlocked: false,
+                icon: '🏎️',
+                color: 0xd97706, // Muscle Red/Orange
+                roofColor: 0x000000,
+                type: 'muscle',
+                desc: 'American muscle car with dual hood scoops!'
+            },
+            {
+                id: 'flying_car',
+                name: 'Flying Car',
+                cost: 2,
+                unlocked: false,
+                icon: '🛸',
+                color: 0x06b6d4, // Neon Cyan Hover Car
+                roofColor: 0xa855f7, // Purple
+                type: 'hover',
+                desc: 'Futuristic anti-gravity car with blue thrusters!'
+            }
+        ];
+
+        let activeCarId = 'alto';
+
+        function renderGarageGrid() {
+            const grid = document.getElementById('garage-grid');
+            document.getElementById('garage-coin-display').innerText = userGoldCoins.toLocaleString();
+            document.getElementById('coin-currency').innerText = userGoldCoins.toLocaleString();
+            grid.innerHTML = '';
+
+            garageCars.forEach(car => {
+                const isSelected = car.id === activeCarId;
+                const card = document.createElement('div');
+                card.className = `car-card ${isSelected ? 'selected' : ''}`;
+
+                let buttonHTML = '';
+                if (isSelected) {
+                    buttonHTML = `<button class="car-btn equipped">✓ EQUIPPED</button>`;
+                } else if (car.unlocked) {
+                    buttonHTML = `<button class="car-btn equip" onclick="equipCar('${car.id}')">SELECT & RIDE</button>`;
+                } else {
+                    buttonHTML = `<button class="car-btn buy" onclick="buyCar('${car.id}')">BUY FOR 🪙 ${car.cost}</button>`;
+                }
+
+                card.innerHTML = `
+                    <div class="car-icon">${car.icon}</div>
+                    <div class="car-name">${car.name}</div>
+                    <div class="car-cost">${car.cost === 0 ? 'FREE' : `🪙 ${car.cost} Coins`}</div>
+                    <div style="font-size: 12px; color: #94a3b8; text-align: center;">${car.desc}</div>
+                    ${buttonHTML}
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        function buyCar(id) {
+            const car = garageCars.find(c => c.id === id);
+            if (!car) return;
+            if (userGoldCoins >= car.cost) {
+                userGoldCoins -= car.cost;
+                car.unlocked = true;
+                equipCar(id);
+            } else {
+                alert(`Not enough coins! Need 🪙 ${car.cost} coins.`);
+            }
+        }
+
+        function equipCar(id) {
+            const car = garageCars.find(c => c.id === id);
+            if (!car || !car.unlocked) return;
+            activeCarId = id;
+            renderGarageGrid();
+            rebuildPlayerVehicle();
+        }
+
+        function openGarageModal() {
+            renderGarageGrid();
+            document.getElementById('garage-modal').classList.add('active');
+        }
+
+        function closeGarageModal() {
+            document.getElementById('garage-modal').classList.remove('active');
+        }
+
         // 3D Scene Setup
         let scene, camera, renderer;
-        let car, carBody, carRoof;
+        let car, carBody, carRoof, carWing, carThrusters = [];
         let attachedWheels = [];
         let detachedPhysicsObjects = [];
         let explosionParticles = [];
@@ -961,6 +1097,7 @@
             document.getElementById('ingame-top-nav').classList.remove('active');
             document.getElementById('level-complete-modal').classList.remove('active');
             document.getElementById('game-over-modal').classList.remove('active');
+            document.getElementById('garage-modal').classList.remove('active');
         }
 
         function createEnvironment() {
@@ -1040,50 +1177,106 @@
             scene.add(rock);
         }
 
+        function rebuildPlayerVehicle() {
+            if (car) scene.remove(car);
+            attachedWheels = [];
+            createVehicle();
+        }
+
+        // 3D MODEL GENERATOR FOR ALTO, VERNA, LAMBORGHINI, MUSTANG, FLYING CAR
         function createVehicle() {
             car = new THREE.Group();
+            const activeCar = garageCars.find(c => c.id === activeCarId) || garageCars[0];
 
-            const bodyGeo = new THREE.BoxGeometry(2.2, 0.8, 4.0);
-            const bodyMat = new THREE.MeshStandardMaterial({ color: 0xf97316, roughness: 0.3, metalness: 0.1 });
+            let bodyWidth = 2.2, bodyHeight = 0.8, bodyLength = 4.0;
+            let roofWidth = 1.8, roofHeight = 0.7, roofLength = 2.2;
+
+            if (activeCar.type === 'supercar') { // Lamborghini
+                bodyWidth = 2.4; bodyHeight = 0.6; bodyLength = 4.4;
+                roofWidth = 1.6; roofHeight = 0.55; roofLength = 2.0;
+            } else if (activeCar.type === 'muscle') { // Mustang
+                bodyWidth = 2.3; bodyHeight = 0.85; bodyLength = 4.3;
+            } else if (activeCar.type === 'hover') { // Flying Car
+                bodyWidth = 2.1; bodyHeight = 0.7; bodyLength = 3.8;
+            }
+
+            // Body
+            const bodyGeo = new THREE.BoxGeometry(bodyWidth, bodyHeight, bodyLength);
+            const bodyMat = new THREE.MeshStandardMaterial({ color: activeCar.color, roughness: 0.3, metalness: 0.2 });
             carBody = new THREE.Mesh(bodyGeo, bodyMat);
-            carBody.position.y = 0.6;
+            carBody.position.y = activeCar.type === 'hover' ? 1.0 : 0.6;
             carBody.castShadow = true;
             car.add(carBody);
 
-            const roofGeo = new THREE.BoxGeometry(1.8, 0.7, 2.2);
-            const roofMat = new THREE.MeshStandardMaterial({ color: 0x0284c7, roughness: 0.3 });
+            // Roof
+            const roofGeo = new THREE.BoxGeometry(roofWidth, roofHeight, roofLength);
+            const roofMat = new THREE.MeshStandardMaterial({ color: activeCar.roofColor, roughness: 0.3 });
             carRoof = new THREE.Mesh(roofGeo, roofMat);
-            carRoof.position.set(0, 1.25, -0.2);
+            carRoof.position.set(0, activeCar.type === 'hover' ? 1.6 : 1.25, -0.2);
             carRoof.castShadow = true;
             car.add(carRoof);
 
+            // Headlights
             const hlGeo = new THREE.SphereGeometry(0.2, 12, 12);
             const hlMat = new THREE.MeshStandardMaterial({ color: 0xfef08a, emissive: 0xfde047 });
             const hl1 = new THREE.Mesh(hlGeo, hlMat);
-            hl1.position.set(-0.75, 0.6, 2.0);
+            hl1.position.set(-bodyWidth * 0.35, carBody.position.y + 0.1, bodyLength * 0.5);
             car.add(hl1);
             const hl2 = hl1.clone();
-            hl2.position.x = 0.75;
+            hl2.position.x = bodyWidth * 0.35;
             car.add(hl2);
 
-            const wheelGeo = new THREE.CylinderGeometry(0.4, 0.4, 0.3, 16);
-            const wheelMat = new THREE.MeshStandardMaterial({ color: 0x1f2937 });
+            // Lamborghini Rear Spoiler Wing
+            if (activeCar.type === 'supercar') {
+                const wingGeo = new THREE.BoxGeometry(2.4, 0.15, 0.6);
+                const wingMat = new THREE.MeshStandardMaterial({ color: 0x111827 });
+                carWing = new THREE.Mesh(wingGeo, wingMat);
+                carWing.position.set(0, 1.3, -2.0);
+                car.add(carWing);
+            }
 
-            const positions = [
-                [-1.15, 0.4, 1.2],
-                [1.15, 0.4, 1.2],
-                [-1.15, 0.4, -1.2],
-                [1.15, 0.4, -1.2]
-            ];
+            // Mustang Hood Scoops
+            if (activeCar.type === 'muscle') {
+                const scoopGeo = new THREE.BoxGeometry(0.6, 0.2, 1.0);
+                const scoopMat = new THREE.MeshStandardMaterial({ color: 0x111827 });
+                const scoop = new THREE.Mesh(scoopGeo, scoopMat);
+                scoop.position.set(0, 1.1, 1.0);
+                car.add(scoop);
+            }
 
-            attachedWheels = positions.map(pos => {
-                const wheel = new THREE.Mesh(wheelGeo, wheelMat);
-                wheel.rotation.z = Math.PI / 2;
-                wheel.position.set(...pos);
-                wheel.castShadow = true;
-                car.add(wheel);
-                return wheel;
-            });
+            // Flying Car Glow Thrusters vs Ground Wheels
+            if (activeCar.type === 'hover') {
+                const thrusterGeo = new THREE.CylinderGeometry(0.4, 0.2, 0.4, 16);
+                const thrusterMat = new THREE.MeshStandardMaterial({ color: 0x06b6d4, emissive: 0x38bdf8, emissiveIntensity: 0.8 });
+                const thrusterPositions = [
+                    [-0.9, 0.6, 1.2], [0.9, 0.6, 1.2],
+                    [-0.9, 0.6, -1.2], [0.9, 0.6, -1.2]
+                ];
+                thrusterPositions.forEach(pos => {
+                    const t = new THREE.Mesh(thrusterGeo, thrusterMat);
+                    t.position.set(...pos);
+                    car.add(t);
+                });
+            } else {
+                // Standard 4 Wheels
+                const wheelGeo = new THREE.CylinderGeometry(0.4, 0.4, 0.3, 16);
+                const wheelMat = new THREE.MeshStandardMaterial({ color: 0x1f2937 });
+                const wheelPositions = [
+                    [-bodyWidth * 0.52, 0.4, bodyLength * 0.3],
+                    [bodyWidth * 0.52, 0.4, bodyLength * 0.3],
+                    [-bodyWidth * 0.52, 0.4, -bodyLength * 0.3],
+                    [bodyWidth * 0.52, 0.4, -bodyLength * 0.3]
+                ];
+
+                attachedWheels = wheelPositions.map(pos => {
+                    const wheel = new THREE.Mesh(wheelGeo, wheelMat);
+                    wheel.rotation.z = Math.PI / 2;
+                    wheel.position.set(...pos);
+                    wheel.castShadow = true;
+                    car.add(wheel);
+                    return wheel;
+                });
+            }
 
             car.position.set(vehicleState.x, vehicleState.y, vehicleState.z);
             scene.add(car);
@@ -1176,7 +1369,6 @@
                 updateObstacles();
                 checkFinishLine();
             } else if (!isPlaying) {
-                // Idle slow rotation of vehicle on home menu
                 car.rotation.y += 0.005;
             }
 
@@ -1188,7 +1380,8 @@
         }
 
         function updateVehicle() {
-            const wheelFactor = attachedWheels.length / 4.0;
+            const activeCar = garageCars.find(c => c.id === activeCarId) || garageCars[0];
+            const wheelFactor = attachedWheels.length > 0 ? (attachedWheels.length / 4.0) : 1.0;
             const effectiveMaxSpeed = vehicleState.maxSpeed * (0.3 + 0.7 * wheelFactor);
 
             if (keys['w'] || keys['arrowup']) {
@@ -1423,8 +1616,10 @@
                     c.collected = true;
                     scene.remove(c.mesh);
                     score++;
+                    userGoldCoins += 10;
                     playCoinSound();
                     document.getElementById('score-display').innerText = `Coins: ${score} / ${totalCoins}`;
+                    document.getElementById('coin-currency').innerText = userGoldCoins.toLocaleString();
                 }
             });
         }
@@ -1489,7 +1684,10 @@
             });
         }
 
-        window.onload = init;
+        window.onload = () => {
+            init();
+            renderGarageGrid();
+        };
     </script>
 </body>
 </html>
