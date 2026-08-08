@@ -637,7 +637,17 @@
         .btn { padding: 10px 22px; border-radius: 10px; font-size: 14px; font-weight: 800; border: none; cursor: pointer; }
         .btn-primary { background: #22c55e; color: white; }
         .btn-secondary { background: #ef4444; color: white; }
-    </style>
+    
+        #joystick-area {
+            position: absolute; left: 20px; bottom: 20px; width: 120px; height: 120px;
+            background: rgba(255, 255, 255, 0.1); border-radius: 50%; border: 2px solid rgba(255, 255, 255, 0.2);
+            display: none; touch-action: none;
+        }
+        #joystick-knob {
+            position: absolute; left: 35px; top: 35px; width: 50px; height: 50px;
+            background: rgba(255, 255, 255, 0.5); border-radius: 50%; pointer-events: none;
+        }
+</style>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 </head>
 <body>
@@ -715,7 +725,11 @@
     <div id="hud">
         <div class="hud-card" id="hud-score-card"><span class="score-text" id="score-display">Coins: 0 / 12</span></div>
         <div class="hud-card" id="hud-checkpoint-card" style="display:none;"><span class="score-text" id="checkpoint-display" style="color:#38bdf8;">CHECKPOINT 0 / 10</span></div>
-        <div class="hud-card" id="hud-timer-card" style="display:none;"><span class="timer-text" id="timer-display">00:00.00</span></div>
+        <div class="hud-card" id="hud-timer-card" style="display:none;">
+        <div id="joystick-area">
+            <div id="joystick-knob"></div>
+        </div>
+<span class="timer-text" id="timer-display">00:00.00</span></div>
         <div class="hud-card">
             <span class="integrity-text" id="integrity-text">Integrity: 100 / 100</span>
             <div class="health-bar-container"><div class="health-bar-fill" id="health-fill"></div></div>
@@ -724,8 +738,25 @@
     </div>
 
     <!-- Mobile Touch Controls -->
-    <div id="touch-controls-overlay">
-        <div style="display:flex; gap:12px;">
+    
+    <!-- SETTINGS MODAL -->
+    <div class="modal-overlay" id="in-game-settings-modal">
+        <div class="modal-card" style="max-width:400px; text-align:center;">
+            <h2>Controls Setup</h2>
+            <p style="margin-bottom: 20px; color: #94a3b8; font-size:14px;">Select your preferred input method.</p>
+            <div style="display: flex; flex-direction:column; gap: 15px;">
+                <button class="btn btn-primary" onclick="setControlType('keyboard')">⌨️ Keyboard</button>
+                <button class="btn btn-primary" onclick="setControlType('joystick')">🕹️ Mobile: Joystick</button>
+                <button class="btn btn-primary" onclick="setControlType('mobile')">📱 Mobile: Buttons</button>
+                <button class="btn btn-primary" onclick="setControlType('tilt')">📳 Mobile: Tilt + Buttons</button>
+            </div>
+            <div style="margin-top: 30px;">
+                <button class="btn btn-secondary" onclick="closeInGameSettings()">Resume Game</button>
+            </div>
+        </div>
+    </div>
+<div id="touch-controls-overlay">
+        <div id="touch-steer-buttons" style="display:flex; gap:12px;">
             <div class="touch-btn" onmousedown="keys['a']=true" onmouseup="keys['a']=false" ontouchstart="keys['a']=true" ontouchend="keys['a']=false">◀</div>
             <div class="touch-btn" onmousedown="keys['d']=true" onmouseup="keys['d']=false" ontouchstart="keys['d']=true" ontouchend="keys['d']=false">▶</div>
         </div>
@@ -741,6 +772,7 @@
     </div>
 
     <div class="ingame-top-nav" id="ingame-top-nav">
+        <div class="header-icon-btn" onclick="openInGameSettings()">⚙️</div>
         
         <div class="header-icon-btn" onclick="returnToDashboard()">🏠</div>
     </div>
@@ -1149,10 +1181,11 @@
 
         function updateVehicle() {
             if (activeInputType === 'tilt') {
-                keys['w'] = tiltInput.accel > 0.1;
-                keys['s'] = tiltInput.accel < -0.1;
                 keys['d'] = tiltInput.turn > 0.1;
                 keys['a'] = tiltInput.turn < -0.1;
+            } else if (activeInputType === 'joystick') {
+                keys['d'] = joystickTurnInput > 0.1;
+                keys['a'] = joystickTurnInput < -0.1;
             }
 
             const currentCar = carsCatalog.find(c => c.id === activeCarId) || carsCatalog[0];
