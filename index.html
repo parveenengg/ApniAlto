@@ -731,7 +731,7 @@
         </div>
         <div style="display:flex; gap:12px;">
             <div class="touch-btn" style="background:#ef4444;" onmousedown="keys['s']=true" onmouseup="keys['s']=false" ontouchstart="keys['s']=true" ontouchend="keys['s']=false">⏹</div>
-            <div class="touch-btn" style="background:#22c55e;" onmousedown="keys['w']=true" onmouseup="keys['w']=false" ontouchstart="keys['w']=true" ontouchend="keys['w']=false">▲</div>
+            <div class="touch-btn" style="background:#22c55e;" onmousedown="keys['w']=true" onmouseup="keys['w']=false" ontouchstart="keys['w']=true; if(Date.now()-lastWTapTime<300){boostTimer=60;} lastWTapTime=Date.now();" ontouchend="keys['w']=false">▲</div>
             <div class="touch-btn" style="background:#f59e0b;" onclick="triggerJump()">🦘</div>
         </div>
     </div>
@@ -902,6 +902,51 @@
         let score = 0, totalCoins = 12, maxHealth = 100, health = 100, isPlaying = false, isLevelComplete = false, isExploded = false, lastGlobalHitTime = 0;
         let currentCheckpointIdx = 0, totalCheckpointsCount = 10, gameTimer = 0, timerInterval = null;
         const vehicleState = { speed: 0, maxSpeed: 0.35, acceleration: 0.015, deceleration: 0.01, turnSpeed: 0.035, angle: 0, x: 0, y: 0, z: -10, velocityY: 0, jumpCount: 0, visualAngle: 0 };
+
+        let activeInputType = 'keyboard';
+        let tiltInput = { turn: 0, accel: 0 };
+
+        function openInGameSettings() {
+            document.getElementById('in-game-settings-modal').classList.add('active');
+            isPlaying = false;
+        }
+
+        function closeInGameSettings() {
+            document.getElementById('in-game-settings-modal').classList.remove('active');
+            isPlaying = true;
+        }
+
+        function setControlType(type) {
+            activeInputType = type;
+            if (type === 'mobile') {
+                document.getElementById('touch-controls-overlay').classList.add('active');
+                document.getElementById('controls-hint').innerText = "Use on-screen buttons to drive and steer.";
+            } else if (type === 'tilt') {
+                document.getElementById('touch-controls-overlay').classList.remove('active');
+                document.getElementById('controls-hint').innerText = "Tilt device left/right to steer. Tilt forward to accelerate.";
+                if (typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function') {
+                    DeviceOrientationEvent.requestPermission().then(response => {
+                        if (response == 'granted') window.addEventListener('deviceorientation', handleOrientation);
+                    }).catch(console.error);
+                } else {
+                    window.addEventListener('deviceorientation', handleOrientation);
+                }
+            } else {
+                document.getElementById('touch-controls-overlay').classList.remove('active');
+                document.getElementById('controls-hint').innerHTML = "🎮 <strong>Controls:</strong> <kbd>W</kbd>/<kbd>S</kbd> Drive • <kbd>A</kbd>/<kbd>D</kbd> Steer • <kbd>Space</kbd> Jump • <kbd>Shift</kbd> Drift";
+            }
+            closeInGameSettings();
+        }
+
+        function handleOrientation(event) {
+            if (activeInputType !== 'tilt') return;
+            let gamma = event.gamma; let beta = event.beta;
+            if (gamma > 45) gamma = 45; if (gamma < -45) gamma = -45;
+            tiltInput.turn = gamma / 45;
+            if (beta > 45) beta = 45; if (beta < -45) beta = -45;
+            tiltInput.accel = -beta / 45;
+        }
+
         const keys = {};
         let lastWTapTime = 0;
         let wWasReleased = true;
@@ -1103,6 +1148,13 @@
         }
 
         function updateVehicle() {
+            if (activeInputType === 'tilt') {
+                keys['w'] = tiltInput.accel > 0.1;
+                keys['s'] = tiltInput.accel < -0.1;
+                keys['d'] = tiltInput.turn > 0.1;
+                keys['a'] = tiltInput.turn < -0.1;
+            }
+
             const currentCar = carsCatalog.find(c => c.id === activeCarId) || carsCatalog[0];
             const wheelFactor = attachedWheels.length > 0 ? (attachedWheels.length / 4.0) : 1.0;
             let effectiveMaxSpeed = (currentCar.speed * 0.055) * (0.3 + 0.7 * wheelFactor);
