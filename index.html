@@ -698,10 +698,7 @@
 
                     
 
-                    <div class="mode-card sprint" onclick="selectModeAndNav('sprint')">
-                        <div class="mode-card-title">SPRINT MODE</div>
-                        <div class="mode-icon-ring">⏱️</div>
-                        <div class="mode-desc-text">Short track, big challenge!</div>
+                    
                     </div>
                 </div>
 
@@ -839,6 +836,19 @@
             { id: 'alto', name: 'WHITE SEDAN', cost: 2, unlocked: true, icon: '🚗', color: 0xf8fafc, roofColor: 0x1e293b, speed: 6.0, accel: 5.5, handling: 6.0, braking: 5.5 }
         ];
         let activeCarId = 'mustang';
+
+        
+        function navTo(screenId) { /* Disabled */ }
+        function addBonusCoins() { userGoldCoins += 10000000; updateCurrencyUI(); }
+        function addBonusGems() { userGems += 10000000; updateCurrencyUI(); }
+        function claimDailyReward() { userGoldCoins += 5000000; updateCurrencyUI(); alert('🎉 Daily Reward Claimed: +5,000,000 Coins!'); }
+        
+        function updateCurrencyUI() {
+            let c = document.getElementById('coin-val');
+            let g = document.getElementById('gem-val');
+            if (c) c.innerText = userGoldCoins.toLocaleString();
+            if (g) g.innerText = userGems.toLocaleString();
+        }
 
         function startGameplay() {
             isPlaying = true;
