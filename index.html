@@ -973,19 +973,19 @@
         }
 
         function createEnvironment() {
-            const groundGeo = new THREE.PlaneGeometry(80, 180);
+            const groundGeo = new THREE.PlaneGeometry(80, 1040);
             const groundMat = new THREE.MeshStandardMaterial({ color: 0x59bd59, roughness: 0.8 });
             const ground = new THREE.Mesh(groundGeo, groundMat);
-            ground.rotation.x = -Math.PI / 2; ground.position.set(0, -0.01, 60);
+            ground.rotation.x = -Math.PI / 2; ground.position.set(0, -0.01, 500);
             scene.add(ground);
 
-            const roadGeo = new THREE.PlaneGeometry(20, 160);
+            const roadGeo = new THREE.PlaneGeometry(20, 1020);
             const roadMat = new THREE.MeshStandardMaterial({ color: 0x333842, roughness: 0.6 });
             const road = new THREE.Mesh(roadGeo, roadMat);
-            road.rotation.x = -Math.PI / 2; road.position.set(0, 0, 60);
+            road.rotation.x = -Math.PI / 2; road.position.set(0, 0, 500);
             scene.add(road);
 
-            for (let z = 0; z <= 120; z += 16) {
+            for (let z = 0; z <= 1000; z += 16) {
                 createTree(-16 + (Math.random() * 2 - 1), z);
                 createTree(16 + (Math.random() * 2 - 1), z);
             }
@@ -1065,16 +1065,18 @@
 
         function createCheckpoints() {
             checkpointRings = [];
-            const ringGeo = new THREE.TorusGeometry(3.5, 0.4, 16, 32);
+            const ringGeo = new THREE.TorusGeometry(4.0, 0.4, 16, 32);
             const activeMat = new THREE.MeshStandardMaterial({ color: 0x22c55e, emissive: 0x15803d });
             const inactiveMat = new THREE.MeshStandardMaterial({ color: 0x64748b, transparent: true, opacity: 0.4 });
 
-            [10, 22, 34, 46, 58, 70, 82, 94, 106, 118].forEach((z, i) => {
-                const ring = new THREE.Mesh(ringGeo, i === 0 ? activeMat : inactiveMat);
-                ring.position.set((i % 2 === 0 ? -3 : 3), 2.5, z);
+            let index = 0;
+            for (let z = 20; z <= 980; z += 40) {
+                const ring = new THREE.Mesh(ringGeo, index === 0 ? activeMat : inactiveMat);
+                ring.position.set((index % 2 === 0 ? -4 : 4), 2.5, z);
                 scene.add(ring);
-                checkpointRings.push({ mesh: ring, activeMat: activeMat, inactiveMat: inactiveMat, index: i, passed: false });
-            });
+                checkpointRings.push({ mesh: ring, activeMat: activeMat, inactiveMat: inactiveMat, index: index, passed: false });
+                index++;
+            }
         }
 
         function createFinishZone() {
@@ -1086,7 +1088,7 @@
             const bannerGeo = new THREE.BoxGeometry(17.5, 1.8, 1.2);
             const bannerMat = new THREE.MeshStandardMaterial({ color: 0x10b981 });
             const banner = new THREE.Mesh(bannerGeo, bannerMat); banner.position.set(0, 7.5, 0); archGroup.add(banner);
-            archGroup.position.set(0, 0, 125); scene.add(archGroup); finishZone = { z: 125, width: 16 };
+            archGroup.position.set(0, 0, 1000); scene.add(archGroup); finishZone = { z: 1000, width: 16 };
         }
 
         function animate() {
@@ -1169,7 +1171,7 @@
             vehicleState.x += Math.sin(vehicleState.angle) * vehicleState.speed;
             vehicleState.z += Math.cos(vehicleState.angle) * vehicleState.speed;
             vehicleState.x = Math.max(-28, Math.min(28, vehicleState.x));
-            vehicleState.z = Math.max(-18, Math.min(138, vehicleState.z));
+            vehicleState.z = Math.max(-18, Math.min(1020, vehicleState.z));
             car.position.set(vehicleState.x, vehicleState.y, vehicleState.z);
             car.rotation.y = vehicleState.visualAngle;
             attachedWheels.forEach(w => w.rotation.x += vehicleState.speed * 2);
@@ -1270,8 +1272,10 @@
 
         function checkFinishLine() {
             if (car.position.z >= finishZone.z && Math.abs(car.position.x) < finishZone.width / 2) {
-                if (selectedGameMode !== 'checkpoints') {
+                if (currentCheckpointIdx >= checkpointRings.length) {
                     finishLevelComplete();
+                } else {
+                    document.getElementById('checkpoint-display').innerText = `MISSED CHECKPOINT! GO BACK!`;
                 }
             }
         }
@@ -1302,21 +1306,21 @@
             document.getElementById('timer-display').innerText = `00:00.00`;
             
             // HUD Cards display per mode
-            document.getElementById('hud-checkpoint-card').style.display = (selectedGameMode === 'checkpoints') ? 'flex' : 'none';
-            document.getElementById('hud-timer-card').style.display = (selectedGameMode === 'sprint' || selectedGameMode === 'checkpoints') ? 'flex' : 'none';
+            document.getElementById('hud-checkpoint-card').style.display = 'flex';
+            document.getElementById('hud-timer-card').style.display = 'flex';
 
             document.getElementById('level-complete-modal').classList.remove('active');
             document.getElementById('game-over-modal').classList.remove('active');
 
-            if (selectedGameMode === 'sprint' || selectedGameMode === 'checkpoints') {
-                timerInterval = setInterval(() => {
-                    if (isPlaying && !isLevelComplete && !isExploded) {
-                        gameTimer += 1;
-                        let sec = (gameTimer / 10).toFixed(2);
-                        document.getElementById('timer-display').innerText = `00:${sec < 10 ? '0' : ''}${sec}`;
-                    }
-                }, 100);
-            }
+            timerInterval = setInterval(() => {
+                if (isPlaying && !isLevelComplete && !isExploded) {
+                    gameTimer += 1;
+                    let sec = (gameTimer / 10).toFixed(2);
+                    let min = Math.floor(sec / 60);
+                    let remSec = (sec % 60).toFixed(2);
+                    document.getElementById('timer-display').innerText = `0${min}:${remSec < 10 ? '0' : ''}${remSec}`;
+                }
+            }, 100);
 
             createVehicle(); updateIntegrityUI();
             coins.forEach(c => { if (c.collected) { c.collected = false; scene.add(c.mesh); } });
