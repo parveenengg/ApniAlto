@@ -1114,9 +1114,17 @@
                 vehicleState.acceleration = 0.015;
             }
 
-            if (keys['w'] || keys['arrowup']) vehicleState.speed = Math.min(vehicleState.speed + vehicleState.acceleration, effectiveMaxSpeed);
-            else if (keys['s'] || keys['arrowdown']) vehicleState.speed = Math.max(vehicleState.speed - vehicleState.acceleration, -effectiveMaxSpeed * 0.5);
-            else {
+            if (keys['w'] || keys['arrowup']) {
+                if (vehicleState.forwardHoldTimer === undefined) vehicleState.forwardHoldTimer = 0;
+                vehicleState.forwardHoldTimer++;
+                effectiveMaxSpeed += (vehicleState.forwardHoldTimer * 0.002);
+                vehicleState.acceleration += (vehicleState.forwardHoldTimer * 0.0002);
+                vehicleState.speed = Math.min(vehicleState.speed + vehicleState.acceleration, effectiveMaxSpeed);
+            } else if (keys['s'] || keys['arrowdown']) {
+                vehicleState.forwardHoldTimer = 0;
+                vehicleState.speed = Math.max(vehicleState.speed - vehicleState.acceleration, -effectiveMaxSpeed * 0.5);
+            } else {
+                vehicleState.forwardHoldTimer = 0;
                 if (vehicleState.speed > 0) vehicleState.speed = Math.max(0, vehicleState.speed - vehicleState.deceleration);
                 if (vehicleState.speed < 0) vehicleState.speed = Math.min(0, vehicleState.speed + vehicleState.deceleration);
             }
@@ -1140,13 +1148,22 @@
                 vehicleState.turnSpeed = 0.035;
             }
             
+            if (keys['space']) {
+                if (vehicleState.jumpHoldTimer === undefined) vehicleState.jumpHoldTimer = 0;
+                vehicleState.jumpHoldTimer++;
+                // Continuously add upward velocity if space is held (fly mode essentially)
+                vehicleState.velocityY += 0.015;
+            } else {
+                vehicleState.jumpHoldTimer = 0;
+            }
+            
             vehicleState.y += vehicleState.velocityY;
             if (vehicleState.y > 0) {
-                vehicleState.velocityY -= 0.014; 
+                vehicleState.velocityY -= 0.014; // gravity
             } else { 
                 vehicleState.y = 0; 
                 vehicleState.velocityY = 0; 
-                vehicleState.jumpCount = 0; // Reset jump on ground
+                vehicleState.jumpCount = 0; 
             }
             
             vehicleState.x += Math.sin(vehicleState.angle) * vehicleState.speed;
