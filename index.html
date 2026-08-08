@@ -661,10 +661,7 @@
 
             <div class="nav-menu">
                 <div class="nav-item active" id="nav-home" onclick="navTo('home')">🏠 HOME</div>
-                <div class="nav-item" id="nav-garage" onclick="navTo('garage')">🚗 GARAGE</div>
-                <div class="nav-item" id="nav-shop" onclick="navTo('shop')">🛒 SHOP</div>
-                <div class="nav-item" id="nav-maps" onclick="navTo('maps')">🗺️ MAPS</div>
-                <div class="nav-item" id="nav-settings" onclick="navTo('settings')">⚙️ SETTINGS</div>
+                
             </div>
         </div>
 
@@ -681,7 +678,7 @@
                         💎 <span id="gem-val">100,000,000</span>
                         <div class="plus-btn" onclick="addBonusGems()">+</div>
                     </div>
-                    <div class="header-icon-btn" onclick="navTo('settings')">⚙️</div>
+                    
                 </div>
             </div>
 
@@ -693,17 +690,13 @@
                 </div>
 
                 <div class="home-cards-row">
-                    <div class="mode-card free-play" onclick="selectModeAndNav('freeplay')">
+                    <div class="mode-card free-play" onclick="startGameplay()">
                         <div class="mode-card-title">FREE PLAY</div>
                         <div class="mode-icon-ring">🏎️</div>
                         <div class="mode-desc-text">Drive around and enjoy the ride!</div>
                     </div>
 
-                    <div class="mode-card checkpoints" onclick="selectModeAndNav('checkpoints')">
-                        <div class="mode-card-title">CHECKPOINTS</div>
-                        <div class="mode-icon-ring">📍</div>
-                        <div class="mode-desc-text">Reach all checkpoints as fast as you can!</div>
-                    </div>
+                    
 
                     <div class="mode-card sprint" onclick="selectModeAndNav('sprint')">
                         <div class="mode-card-title">SPRINT MODE</div>
@@ -718,187 +711,7 @@
                 </div>
             </div>
 
-            <!-- 2. GARAGE SCREEN -->
-            <div class="screen-view" id="view-garage">
-                <div class="garage-container">
-                    <div class="garage-left-cars">
-                        <div style="font-size: 11px; font-weight: 900; color: #94a3b8; margin-bottom: 4px;">MY CARS</div>
-                        <div id="garage-car-list" style="display: flex; flex-direction: column; gap: 8px;">
-                            <!-- Dynamic Car Items -->
-                        </div>
                     </div>
-
-                    <div class="garage-center-stage">
-                        <div class="garage-bottom-actions">
-                            <button class="action-pill-btn" onclick="openCustomizeColor()">🔧 CUSTOMIZE</button>
-                            <button class="action-pill-btn" onclick="upgradeCurrentCar()">⬆️ UPGRADE</button>
-                            <button class="btn-drive-yellow" onclick="startGameplay()">DRIVE ▶</button>
-                        </div>
-                    </div>
-
-                    <div class="garage-right-specs">
-                        <div class="spec-car-name" id="garage-car-name">BLAZE GT</div>
-                        <div class="spec-car-tier" id="garage-car-class">EPIC</div>
-
-                        <div style="display: flex; flex-direction: column; gap: 8px; margin-top: 6px;">
-                            <div>
-                                <div class="stat-line"><span>TOP SPEED</span><span id="val-speed">6.5</span></div>
-                                <div class="stat-bar-track"><div class="stat-bar-value" id="bar-speed" style="width: 65%;"></div></div>
-                            </div>
-                            <div>
-                                <div class="stat-line"><span>ACCELERATION</span><span id="val-accel">5.0</span></div>
-                                <div class="stat-bar-track"><div class="stat-bar-value" id="bar-accel" style="width: 50%;"></div></div>
-                            </div>
-                            <div>
-                                <div class="stat-line"><span>HANDLING</span><span id="val-handling">6.0</span></div>
-                                <div class="stat-bar-track"><div class="stat-bar-value" id="bar-handling" style="width: 60%;"></div></div>
-                            </div>
-                            <div>
-                                <div class="stat-line"><span>BRAKING</span><span id="val-braking">5.5</span></div>
-                                <div class="stat-bar-track"><div class="stat-bar-value" id="bar-braking" style="width: 55%;"></div></div>
-                            </div>
-                        </div>
-
-                        <button class="btn-upgrade-green" onclick="upgradeCurrentCar()">UPGRADE 🪙 2,000</button>
-                    </div>
-                </div>
-            </div>
-
-            <!-- 3. SHOP SCREEN -->
-            <div class="screen-view" id="view-shop">
-                <div class="shop-container">
-                    <div class="shop-subnav">
-                        <div class="shop-subnav-btn active">⭐ FEATURED</div>
-                        <div class="shop-subnav-btn">🚗 CARS</div>
-                        <div class="shop-subnav-btn">🎨 PAINTS</div>
-                        <div class="shop-subnav-btn">🛞 WHEELS</div>
-                        <div class="shop-subnav-btn">⚡ BOOSTERS</div>
-                    </div>
-
-                    <div class="shop-content-area">
-                        <div class="shop-section-title">FEATURED CARS</div>
-                        <div class="shop-cards-grid">
-                            <div class="shop-card">
-                                <div class="shop-card-icon">🚘</div>
-                                <div class="shop-card-name">THUNDER</div>
-                                <button class="shop-price-btn" onclick="buyShopItem('Thunder', 15000)">🪙 15,000</button>
-                            </div>
-                            <div class="shop-card">
-                                <div class="shop-card-icon">🏎️</div>
-                                <div class="shop-card-name">PHANTOM</div>
-                                <button class="shop-price-btn" onclick="buyShopItem('Phantom', 20000)">🪙 20,000</button>
-                            </div>
-                            <div class="shop-card">
-                                <div class="shop-card-icon">🏎️</div>
-                                <div class="shop-card-name">VIPER</div>
-                                <button class="shop-price-btn" onclick="buyShopItem('Viper', 25000)">🪙 25,000</button>
-                            </div>
-                            <div class="shop-card">
-                                <div class="shop-card-icon">🏎️</div>
-                                <div class="shop-card-name">BEAST</div>
-                                <button class="shop-price-btn" style="background:#a855f7;" onclick="buyShopItem('Beast', 750)">💎 750</button>
-                            </div>
-                        </div>
-
-                        <div class="shop-section-title">ITEMS</div>
-                        <div class="shop-cards-grid">
-                            <div class="shop-card">
-                                <div class="shop-card-icon">🪙</div>
-                                <div class="shop-card-name">COIN PACK<br><span style="font-size:10px; color:#94a3b8;">10,000,000</span></div>
-                                <button class="shop-price-btn" style="background:#22c55e;" onclick="addBonusCoins()">₹89.00</button>
-                            </div>
-                            <div class="shop-card">
-                                <div class="shop-card-icon">💎</div>
-                                <div class="shop-card-name">GEM PACK<br><span style="font-size:10px; color:#94a3b8;">10,000,000</span></div>
-                                <button class="shop-price-btn" style="background:#22c55e;" onclick="addBonusGems()">₹179.00</button>
-                            </div>
-                            <div class="shop-card">
-                                <div class="shop-card-icon">🧪</div>
-                                <div class="shop-card-name">NOS BOOST<br><span style="font-size:10px; color:#94a3b8;">x10</span></div>
-                                <button class="shop-price-btn" style="background:#a855f7;">💎 200</button>
-                            </div>
-                            <div class="shop-card">
-                                <div class="shop-card-icon">2x</div>
-                                <div class="shop-card-name">DOUBLE COINS<br><span style="font-size:10px; color:#94a3b8;">x5</span></div>
-                                <button class="shop-price-btn" style="background:#a855f7;">💎 150</button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- 4. MAP SELECTION SCREEN -->
-            <div class="screen-view" id="view-maps">
-                <div class="map-mode-header">
-                    <div class="map-mode-tab active" id="tab-freeplay" onclick="switchModeTab('freeplay')">FREE PLAY</div>
-                    <div class="map-mode-tab" id="tab-checkpoints" onclick="switchModeTab('checkpoints')">CHECKPOINTS</div>
-                    <div class="map-mode-tab" id="tab-sprint" onclick="switchModeTab('sprint')">SPRINT MODE</div>
-                </div>
-
-                <div class="maps-grid">
-                    <div class="map-tile selected" onclick="selectMap('green_valley')">
-                        <div class="map-name">GREEN VALLEY ✓</div>
-                    </div>
-                    <div class="map-tile" onclick="selectMap('desert_run')">
-                        <div class="map-name">DESERT RUN</div>
-                    </div>
-                    <div class="map-tile" onclick="selectMap('coastal_drive')">
-                        <div class="map-name">COASTAL DRIVE</div>
-                    </div>
-                    <div class="map-tile">
-                        <div class="map-name">CITY NIGHT</div>
-                        <div class="map-lock-overlay">🔒</div>
-                    </div>
-                    <div class="map-tile">
-                        <div class="map-name">MOUNTAIN ROAD</div>
-                        <div class="map-lock-overlay">🔒</div>
-                    </div>
-                    <div class="map-tile">
-                        <div class="map-name">WINTER PASS</div>
-                        <div class="map-lock-overlay">🔒</div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- 5. SETTINGS SCREEN -->
-            <div class="screen-view" id="view-settings">
-                <div class="settings-container">
-                    <div class="shop-subnav">
-                        <div class="shop-subnav-btn active">🎮 CONTROLS</div>
-                        <div class="shop-subnav-btn">🖥️ GRAPHICS</div>
-                        <div class="shop-subnav-btn">🔊 SOUND</div>
-                        <div class="shop-subnav-btn">⚙️ GAMEPLAY</div>
-                        <div class="shop-subnav-btn">🌐 LANGUAGE</div>
-                    </div>
-
-                    <div class="settings-panel">
-                        <div style="font-size: 11px; font-weight: 900; color: #94a3b8; letter-spacing: 1px;">CONTROL TYPE</div>
-                        <div class="control-types-grid">
-                            <div class="control-type-card" id="ctrl-tilt" onclick="setControlType('tilt')">📱<br>TILT</div>
-                            <div class="control-type-card" id="ctrl-buttons" onclick="setControlType('buttons')">⬆️<br>BUTTONS</div>
-                            <div class="control-type-card selected" id="ctrl-wheel" onclick="setControlType('wheel')">☸️<br>STEERING WHEEL ✓</div>
-                        </div>
-
-                        <div style="display: flex; flex-direction: column; gap: 6px; margin-top: 10px;">
-                            <div style="display: flex; justify-content: space-between; font-size: 12px; font-weight: 800;">
-                                <span>SENSITIVITY</span><span id="sens-val">70%</span>
-                            </div>
-                            <input type="range" min="10" max="100" value="70" oninput="document.getElementById('sens-val').innerText=this.value+'%'">
-                        </div>
-
-                        <div class="toggle-switch-row">
-                            <span>VIBRATION</span>
-                            <div class="toggle-pill on" id="toggle-vib" onclick="this.classList.toggle('on'); this.classList.toggle('off');"><div class="toggle-thumb"></div></div>
-                        </div>
-
-                        <div class="toggle-switch-row">
-                            <span>AUTO ACCELERATE</span>
-                            <div class="toggle-pill off" id="toggle-auto" onclick="this.classList.toggle('on'); this.classList.toggle('off');"><div class="toggle-thumb"></div></div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
     </div>
 
     <!-- IN-GAME HUD -->
@@ -931,7 +744,7 @@
     </div>
 
     <div class="ingame-top-nav" id="ingame-top-nav">
-        <div class="header-icon-btn" onclick="navTo('settings')">⚙️</div>
+        
         <div class="header-icon-btn" onclick="returnToDashboard()">🏠</div>
     </div>
 
@@ -1016,7 +829,7 @@
         // UNLIMITED MONEY & GEMS (100,000,000)
         let userGoldCoins = 100000000;
         let userGems = 100000000;
-        let selectedGameMode = 'freeplay'; // 'freeplay', 'checkpoints', 'sprint'
+        let selectedGameMode = 'freeplay';
         let selectedMapId = 'green_valley';
 
         const carsCatalog = [
@@ -1026,115 +839,6 @@
             { id: 'alto', name: 'WHITE SEDAN', cost: 2, unlocked: true, icon: '🚗', color: 0xf8fafc, roofColor: 0x1e293b, speed: 6.0, accel: 5.5, handling: 6.0, braking: 5.5 }
         ];
         let activeCarId = 'mustang';
-
-        function navTo(screenId) {
-            document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
-            const activeNav = document.getElementById(`nav-${screenId}`);
-            if (activeNav) activeNav.classList.add('active');
-
-            document.querySelectorAll('.screen-view').forEach(el => el.classList.remove('active'));
-            const view = document.getElementById(`view-${screenId}`);
-            if (view) view.classList.add('active');
-
-            if (screenId === 'garage') renderGaragePanel();
-        }
-
-        function selectModeAndNav(mode) {
-            selectedGameMode = mode;
-            switchModeTab(mode);
-            navTo('maps');
-        }
-
-        function switchModeTab(mode) {
-            selectedGameMode = mode;
-            document.querySelectorAll('.map-mode-tab').forEach(el => el.classList.remove('active'));
-            const activeTab = document.getElementById(`tab-${mode}`);
-            if (activeTab) activeTab.classList.add('active');
-        }
-
-        function selectMap(mapId) {
-            selectedMapId = mapId;
-            document.querySelectorAll('.map-tile').forEach(el => el.classList.remove('selected'));
-            event.currentTarget.classList.add('selected');
-        }
-
-        function setControlType(type) {
-            document.querySelectorAll('.control-type-card').forEach(el => el.classList.remove('selected'));
-            document.getElementById(`ctrl-${type}`).classList.add('selected');
-        }
-
-        function addBonusCoins() { userGoldCoins += 10000000; updateCurrencyUI(); }
-        function addBonusGems() { userGems += 10000000; updateCurrencyUI(); }
-        function claimDailyReward() { userGoldCoins += 5000000; updateCurrencyUI(); alert('🎉 Daily Reward Claimed: +5,000,000 Coins!'); }
-        
-        function updateCurrencyUI() {
-            document.getElementById('coin-val').innerText = userGoldCoins.toLocaleString();
-            document.getElementById('gem-val').innerText = userGems.toLocaleString();
-        }
-
-        function renderGaragePanel() {
-            const listEl = document.getElementById('garage-car-list');
-            listEl.innerHTML = '';
-
-            carsCatalog.forEach(car => {
-                const isActive = car.id === activeCarId;
-                const item = document.createElement('div');
-                item.className = `garage-car-item ${isActive ? 'selected' : ''}`;
-                item.onclick = () => selectGarageCar(car.id);
-                item.innerHTML = `
-                    <div style="display:flex; align-items:center; gap:8px;">
-                        <span class="car-thumb-icon">${car.icon}</span>
-                        <span style="font-weight:800; font-size:12px;">${car.name}</span>
-                    </div>
-                    <div>${isActive ? '✓' : ''}</div>
-                `;
-                listEl.appendChild(item);
-            });
-
-            const currentCar = carsCatalog.find(c => c.id === activeCarId) || carsCatalog[0];
-            document.getElementById('garage-car-name').innerText = currentCar.name;
-            document.getElementById('val-speed').innerText = currentCar.speed.toFixed(1);
-            document.getElementById('bar-speed').style.width = (currentCar.speed * 10) + '%';
-            document.getElementById('val-accel').innerText = currentCar.accel.toFixed(1);
-            document.getElementById('bar-accel').style.width = (currentCar.accel * 10) + '%';
-            document.getElementById('val-handling').innerText = currentCar.handling.toFixed(1);
-            document.getElementById('bar-handling').style.width = (currentCar.handling * 10) + '%';
-            document.getElementById('val-braking').innerText = currentCar.braking.toFixed(1);
-            document.getElementById('bar-braking').style.width = (currentCar.braking * 10) + '%';
-        }
-
-        function selectGarageCar(id) {
-            activeCarId = id;
-            renderGaragePanel();
-            rebuildPlayerVehicle();
-        }
-
-        function upgradeCurrentCar() {
-            const currentCar = carsCatalog.find(c => c.id === activeCarId);
-            if (userGoldCoins >= 2000) {
-                userGoldCoins -= 2000;
-                currentCar.speed = Math.min(10, currentCar.speed + 0.5);
-                currentCar.accel = Math.min(10, currentCar.accel + 0.5);
-                currentCar.handling = Math.min(10, currentCar.handling + 0.5);
-                updateCurrencyUI();
-                renderGaragePanel();
-                alert(`🚀 ${currentCar.name} Upgraded (+5% Stats)!`);
-            }
-        }
-
-        function openCustomizeColor() {
-            const currentCar = carsCatalog.find(c => c.id === activeCarId);
-            currentCar.color = Math.floor(Math.random() * 0xffffff);
-            rebuildPlayerVehicle();
-        }
-
-        function buyShopItem(name, cost) {
-            if (userGoldCoins >= cost) {
-                userGoldCoins -= cost;
-                updateCurrencyUI();
-                alert(`Purchased ${name}!`);
-            }
-        }
 
         function startGameplay() {
             isPlaying = true;
@@ -1512,7 +1216,7 @@
             checkpointRings.forEach((r, i) => { r.passed = false; r.mesh.material = (i === 0) ? r.activeMat : r.inactiveMat; });
         }
 
-        window.onload = () => { init3D(); renderGaragePanel(); };
+        window.onload = () => { init3D(); };
     </script>
 </body>
 </html>
