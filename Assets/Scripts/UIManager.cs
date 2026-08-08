@@ -5,38 +5,31 @@ using TMPro;
 namespace VehicleCoinCollector
 {
     /// <summary>
-    /// UI Manager script managing HUD score, integrity bar, top-right Settings button,
-    /// Settings modal popup, and Level Complete / Game Over modal popups.
+    /// Master UI Manager for canvas modals, HUD, mobile touch controls, checkpoint counter, sprint timer, pause menu, and results screen.
     /// </summary>
     public class UIManager : MonoBehaviour
     {
         public static UIManager Instance { get; private set; }
 
         [Header("HUD Elements")]
-        public TextMeshProUGUI scoreTMP;
-        public Text scoreLegacyText;
-
+        public TextMeshProUGUI scoreText;
+        public TextMeshProUGUI integrityText;
         public Image healthBarFill;
-        public TextMeshProUGUI healthTMP;
-        public Text healthLegacyText;
+        public TextMeshProUGUI tireCountBadge;
+        public TextMeshProUGUI checkpointCounterText;
+        public TextMeshProUGUI raceTimerText;
+        public TextMeshProUGUI countdownText;
 
-        [Header("Top Right Settings Button")]
-        public Button topRightSettingsButton;
-        public GameObject settingsModalPanel;
-        public Button closeSettingsButton;
+        [Header("Modals")]
+        public GameObject levelCompleteModal;
+        public TextMeshProUGUI finalScoreText;
+        public GameObject gameOverModal;
+        public GameObject pauseModal;
+        public GameObject settingsModal;
 
-        [Header("Level Complete Modal")]
-        public GameObject levelCompletePanel;
-        public TextMeshProUGUI finalScoreTMP;
-        public Text finalScoreLegacyText;
-        public Button restartButton;
-        public Button quitButton;
-
-        [Header("Game Over Modal")]
-        public GameObject gameOverPanel;
-        public TextMeshProUGUI gameOverTMP;
-        public Text gameOverLegacyText;
-        public Button gameOverRestartButton;
+        [Header("Mobile Touch Control Overlays")]
+        public GameObject steeringWheelOverlay;
+        public GameObject touchButtonsOverlay;
 
         private void Awake()
         {
@@ -50,96 +43,137 @@ namespace VehicleCoinCollector
 
         private void Start()
         {
-            if (levelCompletePanel != null) levelCompletePanel.SetActive(false);
-            if (gameOverPanel != null) gameOverPanel.SetActive(false);
-            if (settingsModalPanel != null) settingsModalPanel.SetActive(false);
-
-            if (restartButton != null) restartButton.onClick.AddListener(OnRestartClicked);
-            if (quitButton != null) quitButton.onClick.AddListener(OnQuitClicked);
-            if (gameOverRestartButton != null) gameOverRestartButton.onClick.AddListener(OnRestartClicked);
-
-            if (topRightSettingsButton != null) topRightSettingsButton.onClick.AddListener(OpenSettingsModal);
-            if (closeSettingsButton != null) closeSettingsButton.onClick.AddListener(CloseSettingsModal);
-        }
-
-        public void OpenSettingsModal()
-        {
-            if (settingsModalPanel != null)
-            {
-                settingsModalPanel.SetActive(true);
-            }
-        }
-
-        public void CloseSettingsModal()
-        {
-            if (settingsModalPanel != null)
-            {
-                settingsModalPanel.SetActive(false);
-            }
+            HideAllModals();
+            UpdateTouchControlOverlays();
         }
 
         public void UpdateScoreUI(int currentCoins, int totalCoins)
         {
-            string scoreString = $"Coins: {currentCoins} / {totalCoins}";
-
-            if (scoreTMP != null) scoreTMP.text = scoreString;
-            if (scoreLegacyText != null) scoreLegacyText.text = scoreString;
+            if (scoreText != null)
+            {
+                scoreText.text = $"Coins: {currentCoins} / {totalCoins}";
+            }
         }
 
-        public void UpdateHealthUI(int currentHealth, int maxHealth)
+        public void UpdateIntegrityUI(int currentHealth, int maxHealth, int tireCount)
         {
-            float fillRatio = Mathf.Clamp01((float)currentHealth / (float)maxHealth);
+            if (integrityText != null)
+            {
+                integrityText.text = $"Integrity: {currentHealth} / {maxHealth}";
+            }
             if (healthBarFill != null)
             {
-                healthBarFill.fillAmount = fillRatio;
+                healthBarFill.fillAmount = Mathf.Clamp01((float)currentHealth / maxHealth);
             }
-
-            string healthString = $"Integrity: {currentHealth} / {maxHealth}";
-
-            if (healthTMP != null) healthTMP.text = healthString;
-            if (healthLegacyText != null) healthLegacyText.text = healthString;
+            if (tireCountBadge != null)
+            {
+                tireCountBadge.text = $"🛞 {tireCount} Tires";
+            }
         }
 
-        public void ShowLevelCompleteModal(int finalCoins, int totalCoins)
+        public void UpdateCheckpointCounter(int current, int total)
         {
-            if (levelCompletePanel != null)
+            if (checkpointCounterText != null)
             {
-                levelCompletePanel.SetActive(true);
+                checkpointCounterText.gameObject.SetActive(true);
+                checkpointCounterText.text = $"CHECKPOINT {current} / {total}";
             }
+        }
 
-            string summary = $"Level Complete!\nCoins Collected: {finalCoins} / {totalCoins}";
+        public void UpdateRaceTimer(float timerSeconds)
+        {
+            if (raceTimerText != null)
+            {
+                raceTimerText.gameObject.SetActive(true);
+                int minutes = Mathf.FloorToInt(timerSeconds / 60F);
+                int seconds = Mathf.FloorToInt(timerSeconds % 60F);
+                int fraction = Mathf.FloorToInt((timerSeconds * 100F) % 100F);
+                raceTimerText.text = string.Format("{0:00}:{1:00}.{2:00}", minutes, seconds, fraction);
+            }
+        }
 
-            if (finalScoreTMP != null) finalScoreTMP.text = summary;
-            if (finalScoreLegacyText != null) finalScoreLegacyText.text = summary;
+        public void UpdateCountdown(float secondsRemaining)
+        {
+            if (countdownText != null)
+            {
+                if (secondsRemaining > 0f)
+                {
+                    countdownText.gameObject.SetActive(true);
+                    int sec = Mathf.CeilToInt(secondsRemaining);
+                    countdownText.text = sec > 0 ? sec.ToString() : "GO!";
+                }
+                else
+                {
+                    countdownText.gameObject.SetActive(false);
+                }
+            }
+        }
+
+        public void ShowLevelCompleteModal(int coins, int totalCoins)
+        {
+            HideAllModals();
+            if (levelCompleteModal != null)
+            {
+                levelCompleteModal.SetActive(true);
+            }
+            if (finalScoreText != null)
+            {
+                finalScoreText.text = $"Coins Collected: {coins} / {totalCoins}";
+            }
         }
 
         public void ShowGameOverModal()
         {
-            if (gameOverPanel != null)
+            HideAllModals();
+            if (gameOverModal != null)
             {
-                gameOverPanel.SetActive(true);
-            }
-
-            string summary = "VEHICLE BLASTED! 💥\nIntegrity reached 0!";
-
-            if (gameOverTMP != null) gameOverTMP.text = summary;
-            if (gameOverLegacyText != null) gameOverLegacyText.text = summary;
-        }
-
-        private void OnRestartClicked()
-        {
-            if (GameManager.Instance != null)
-            {
-                GameManager.Instance.RestartLevel();
+                gameOverModal.SetActive(true);
             }
         }
 
-        private void OnQuitClicked()
+        public void TogglePauseModal()
         {
-            if (GameManager.Instance != null)
+            if (pauseModal != null)
             {
-                GameManager.Instance.QuitGame();
+                bool isPaused = !pauseModal.activeSelf;
+                pauseModal.SetActive(isPaused);
+                Time.timeScale = isPaused ? 0f : 1f;
             }
+        }
+
+        public void ToggleSettingsModal()
+        {
+            if (settingsModal != null)
+            {
+                settingsModal.SetActive(!settingsModal.activeSelf);
+            }
+        }
+
+        public void HideAllModals()
+        {
+            if (levelCompleteModal != null) levelCompleteModal.SetActive(false);
+            if (gameOverModal != null) gameOverModal.SetActive(false);
+            if (pauseModal != null) pauseModal.SetActive(false);
+            if (settingsModal != null) settingsModal.SetActive(false);
+        }
+
+        public void UpdateTouchControlOverlays()
+        {
+            ControlType type = (InputManager.Instance != null) ? InputManager.Instance.ActiveControlType : ControlType.SteeringWheel;
+            if (steeringWheelOverlay != null) steeringWheelOverlay.SetActive(type == ControlType.SteeringWheel);
+            if (touchButtonsOverlay != null) touchButtonsOverlay.SetActive(type == ControlType.Buttons);
+        }
+
+        // Button Callbacks
+        public void OnClickRestart()
+        {
+            if (GameManager.Instance != null) GameManager.Instance.RestartLevel();
+        }
+
+        public void OnClickHomeMenu()
+        {
+            Time.timeScale = 1f;
+            if (GameManager.Instance != null) GameManager.Instance.QuitGame();
         }
     }
 }

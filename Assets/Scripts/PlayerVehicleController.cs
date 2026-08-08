@@ -1,160 +1,142 @@
 using UnityEngine;
-using System.Collections.Generic;
 
 namespace VehicleCoinCollector
 {
     /// <summary>
-    /// Vehicle controller with 100 max integrity, Space key jump capability (Raycast ground check),
-    /// 10 damage per hit, hit cooldown, progressive tire detachment thresholds, and explosive blast.
+    /// Vehicle Movement & Physics Controller.
+    /// Supports dynamic vehicle stats, raycast ground checks, jump mechanics, tire detachment, and explosion.
     /// </summary>
     public class PlayerVehicleController : MonoBehaviour
     {
         [Header("Vehicle Dynamics")]
-        public float moveSpeed = 12f;
-        public float turnSpeed = 100f;
-        public float brakeForce = 5f;
-        public float jumpForce = 9.0f; // High vertical jump force to clear 2m-3m obstacles cleanly
+        public float topSpeed = 20.0f;
+        public float accelerationForce = 15.0f;
+        public float turnSpeed = 80.0f;
+        public float brakeForce = 25.0f;
+        public float jumpForce = 9.0f;
 
-        [Header("Vehicle Health & Integrity")]
-        public int maxHealth = 100;
-        public int currentHealth = 100;
-        public int damagePerHit = 10;
-
-        [Header("Hit Invulnerability Cooldown")]
-        public float hitCooldownDuration = 1.0f;
-        private float lastHitTimestamp = -10f;
-
-        [Header("Wheel Detachment System")]
-        public Transform[] wheels;
-        public float wheelRotationSpeed = 360f;
-        private List<Transform> attachedWheels = new List<Transform>();
-        private List<Transform> detachedWheels = new List<Transform>();
-
-        [Header("Explosion Effects")]
-        public Transform cabinRoof;
-        public Transform bodyBase;
+        [Header("Integrity & Detachment")]
+        public int maxIntegrity = 100;
+        public int currentIntegrity = 100;
+        public GameObject[] tireObjects;
+        public GameObject roofObject;
+        public GameObject explosionVFX;
 
         private Rigidbody rb;
-        private float moveInput;
-        private float turnInput;
+        private bool isGrounded = false;
+        private float lastHitTime = 0f;
+        private int remainingTireCount = 4;
         private bool isExploded = false;
-        private bool isGrounded = true;
 
         private void Awake()
         {
             rb = GetComponent<Rigidbody>();
-            if (rb != null)
-            {
-                rb.centerOfMass = new Vector3(0, -0.3f, 0);
-            }
-            currentHealth = maxHealth;
-
-            if (wheels != null)
-            {
-                attachedWheels.AddRange(wheels);
-            }
         }
 
         private void Start()
         {
+            ApplyUpgradedStats();
+            currentIntegrity = maxIntegrity;
             if (UIManager.Instance != null)
             {
-                UIManager.Instance.UpdateHealthUI(currentHealth, maxHealth);
+                UIManager.Instance.UpdateIntegrityUI(currentIntegrity, maxIntegrity, remainingTireCount);
             }
         }
 
-        private void Update()
+        public void ApplyUpgradedStats()
         {
-            if (isExploded) return;
-
-            // Ground check via downward raycast or height check
-            isGrounded = Physics.Raycast(transform.position, Vector3.down, 1.2f) || transform.position.y <= 0.65f;
-
-            moveInput = Input.GetAxis("Vertical");
-            turnInput = Input.GetAxis("Horizontal");
-
-            // Press Space key to jump over obstacles!
-            if ((Input.GetKeyDown(KeyCode.Space) || Input.GetButtonDown("Jump")) && isGrounded)
+            if (GarageManager.Instance != null && GarageManager.Instance.SelectedVehicle != null)
             {
-                Jump();
-            }
-
-            if (attachedWheels.Count > 0 && Mathf.Abs(moveInput) > 0.05f)
-            {
-                float rotationAngle = moveInput * wheelRotationSpeed * Time.deltaTime;
-                foreach (Transform wheel in attachedWheels)
-                {
-                    if (wheel != null)
-                    {
-                        wheel.Rotate(Vector3.right, rotationAngle, Space.Self);
-                    }
-                }
+                VehicleData v = GarageManager.Instance.SelectedVehicle;
+                topSpeed = v.topSpeed * 3.2f;
+                accelerationForce = v.acceleration * 2.8f;
+                turnSpeed = v.handling * 14.0f;
+                brakeForce = v.braking * 5.0f;
             }
         }
 
         private void FixedUpdate()
         {
-            if (isExploded) return;
-            HandleMovement();
-        }
-
-        private void HandleMovement()
-        {
-            if (rb == null) return;
-
-            float wheelFactor = Mathf.Clamp01((float)attachedWheels.Count / 4f);
-            float effectiveMoveSpeed = moveSpeed * (0.4f + 0.6f * wheelFactor);
-            float effectiveTurnSpeed = turnSpeed * (0.3f + 0.7f * wheelFactor);
-
-            if (Mathf.Abs(moveInput) > 0.05f)
+            if (isExploded || (GameManager.Instance != null && GameManager.Instance.CurrentState != GameManager.GameState.Playing))
             {
-                Vector3 moveDirection = transform.forward * moveInput * effectiveMoveSpeed;
-                Vector3 newVelocity = new Vector3(moveDirection.x, rb.linearVelocity.y, moveDirection.z);
-                rb.linearVelocity = Vector3.Lerp(rb.linearVelocity, newVelocity, Time.fixedDeltaTime * 8f);
+                return;
+            }
 
-                float turnAngle = turnInput * effectiveTurnSpeed * Time.fixedDeltaTime * Mathf.Sign(moveInput);
-                Quaternion turnRotation = Quaternion.Euler(0f, turnAngle, 0f);
+            CheckGrounded();
+
+            // Get Input from InputManager
+            float moveInput = (InputManager.Instance != null) ? InputManager.Instance.ThrottleInput : Input.GetAxis("Vertical");
+            float turnInput = (InputManager.Instance != null) ? InputManager.Instance.SteeringInput : Input.GetAxis("Horizontal");
+            bool jumpRequested = (InputManager.Instance != null) ? InputManager.Instance.JumpInput : Input.GetKeyDown(KeyCode.Space);
+
+            // Wheel penalty based on detached tires
+            float tireFactor = (remainingTireCount / 4.0f);
+            float effectiveMaxSpeed = topSpeed * (0.3f + 0.7f * tireFactor);
+
+            // Acceleration & Movement
+            if (moveInput != 0f)
+            {
+                Vector3 moveDir = transform.forward * moveInput * accelerationForce;
+                rb.AddForce(moveDir, ForceMode.Acceleration);
+            }
+
+            // Clamp max speed
+            if (rb.linearVelocity.magnitude > effectiveMaxSpeed)
+            {
+                rb.linearVelocity = rb.linearVelocity.normalized * effectiveMaxSpeed;
+            }
+
+            // Steering
+            if (Mathf.Abs(moveInput) > 0.05f || rb.linearVelocity.magnitude > 0.5f)
+            {
+                float turnDir = Mathf.Sign(Vector3.Dot(rb.linearVelocity, transform.forward));
+                float turn = turnInput * turnSpeed * turnDir * Time.fixedDeltaTime;
+                Quaternion turnRotation = Quaternion.Euler(0f, turn, 0f);
                 rb.MoveRotation(rb.rotation * turnRotation);
             }
-            else
+
+            // Jump
+            if (jumpRequested && isGrounded)
             {
-                Vector3 horizontalVel = new Vector3(rb.linearVelocity.x, 0, rb.linearVelocity.z);
-                horizontalVel = Vector3.Lerp(horizontalVel, Vector3.zero, Time.fixedDeltaTime * brakeForce);
-                rb.linearVelocity = new Vector3(horizontalVel.x, rb.linearVelocity.y, horizontalVel.z);
+                rb.AddForce(Vector3.up * jumpForce, ForceMode.Impulse);
+                if (AudioManager.Instance != null) AudioManager.Instance.PlayJumpSound();
             }
         }
 
-        private void Jump()
+        private void CheckGrounded()
         {
-            if (rb != null)
-            {
-                rb.linearVelocity = new Vector3(rb.linearVelocity.x, jumpForce, rb.linearVelocity.z);
-            }
+            isGrounded = Physics.Raycast(transform.position + Vector3.up * 0.2f, Vector3.down, 0.6f);
+        }
 
-            if (AudioManager.Instance != null)
+        private void OnCollisionEnter(Collision collision)
+        {
+            if (isExploded || Time.time - lastHitTime < 1.0f) return;
+
+            if (collision.gameObject.CompareTag("Obstacle") || collision.gameObject.GetComponent<ObstacleBehaviour>() != null)
             {
-                AudioManager.Instance.PlayJumpSound();
+                lastHitTime = Time.time;
+                TakeIntegrityDamage(10);
+                if (AudioManager.Instance != null) AudioManager.Instance.PlayHitSound();
+
+                // Knockback
+                Vector3 knockbackDir = (transform.position - collision.contacts[0].point).normalized;
+                rb.AddForce(knockbackDir * 6.0f, ForceMode.Impulse);
             }
         }
 
-        public void TakeDamage(int customDamage = 10)
+        public void TakeIntegrityDamage(int damage)
         {
             if (isExploded) return;
 
-            if (Time.time - lastHitTimestamp < hitCooldownDuration) return;
-            lastHitTimestamp = Time.time;
-
-            int actualDamage = (customDamage > 0) ? customDamage : damagePerHit;
-            currentHealth = Mathf.Max(0, currentHealth - actualDamage);
+            currentIntegrity = Mathf.Max(0, currentIntegrity - damage);
+            CheckTireDetachmentThresholds();
 
             if (UIManager.Instance != null)
             {
-                UIManager.Instance.UpdateHealthUI(currentHealth, maxHealth);
+                UIManager.Instance.UpdateIntegrityUI(currentIntegrity, maxIntegrity, remainingTireCount);
             }
 
-            CheckTireDetachmentThresholds();
-
-            if (currentHealth <= 0)
+            if (currentIntegrity <= 0)
             {
                 ExplodeVehicle();
             }
@@ -162,40 +144,34 @@ namespace VehicleCoinCollector
 
         private void CheckTireDetachmentThresholds()
         {
-            int targetAttachedCount = 4;
-            if (currentHealth <= 0) targetAttachedCount = 0;
-            else if (currentHealth <= 20) targetAttachedCount = 1;
-            else if (currentHealth <= 50) targetAttachedCount = 2;
-            else if (currentHealth <= 70) targetAttachedCount = 3;
+            int targetTires = 4;
+            if (currentIntegrity <= 0) targetTires = 0;
+            else if (currentIntegrity <= 20) targetTires = 1;
+            else if (currentIntegrity <= 50) targetTires = 2;
+            else if (currentIntegrity <= 70) targetTires = 3;
 
-            while (attachedWheels.Count > targetAttachedCount && attachedWheels.Count > 0)
+            while (remainingTireCount > targetTires && remainingTireCount > 0)
             {
-                DetachNextWheel();
+                DetachOneTire();
             }
         }
 
-        private void DetachNextWheel()
+        private void DetachOneTire()
         {
-            if (attachedWheels.Count == 0) return;
+            if (remainingTireCount <= 0 || tireObjects == null || tireObjects.Length == 0) return;
 
-            Transform wheelToDetach = attachedWheels[0];
-            attachedWheels.RemoveAt(0);
-            detachedWheels.Add(wheelToDetach);
-
-            if (wheelToDetach != null)
+            int tireIdx = 4 - remainingTireCount;
+            if (tireIdx < tireObjects.Length && tireObjects[tireIdx] != null)
             {
-                wheelToDetach.SetParent(null, true);
-
-                MeshCollider wheelCol = wheelToDetach.gameObject.AddComponent<MeshCollider>();
-                wheelCol.convex = true;
-
-                Rigidbody wheelRb = wheelToDetach.gameObject.AddComponent<Rigidbody>();
-                wheelRb.mass = 25f;
-
-                Vector3 popDirection = (wheelToDetach.position - transform.position).normalized + Vector3.up * 0.8f;
-                wheelRb.AddForce(popDirection * Random.Range(6f, 10f), ForceMode.Impulse);
-                wheelRb.AddTorque(Random.insideUnitSphere * 15f, ForceMode.Impulse);
+                GameObject t = tireObjects[tireIdx];
+                t.transform.SetParent(null);
+                Rigidbody tireRb = t.GetComponent<Rigidbody>() ?? t.AddComponent<Rigidbody>();
+                tireRb.mass = 2f;
+                tireRb.AddForce(Vector3.up * 4f + Random.insideUnitSphere * 2f, ForceMode.Impulse);
+                Destroy(t, 6.0f);
             }
+
+            remainingTireCount--;
         }
 
         private void ExplodeVehicle()
@@ -203,46 +179,27 @@ namespace VehicleCoinCollector
             if (isExploded) return;
             isExploded = true;
 
-            while (attachedWheels.Count > 0)
+            if (AudioManager.Instance != null) AudioManager.Instance.PlayExplosionSound();
+
+            // Detach remaining tires & roof
+            while (remainingTireCount > 0) DetachOneTire();
+
+            if (roofObject != null)
             {
-                DetachNextWheel();
+                roofObject.transform.SetParent(null);
+                Rigidbody roofRb = roofObject.GetComponent<Rigidbody>() ?? roofObject.AddComponent<Rigidbody>();
+                roofRb.AddForce(Vector3.up * 7f + transform.forward * 3f, ForceMode.Impulse);
+                Destroy(roofObject, 6.0f);
             }
 
-            DetachPartWithBlast(cabinRoof, 12f);
-            DetachPartWithBlast(bodyBase, 8f);
-
-            if (AudioManager.Instance != null)
+            if (explosionVFX != null)
             {
-                AudioManager.Instance.PlayExplosionSound();
-            }
-
-            if (rb != null)
-            {
-                rb.isKinematic = true;
+                Instantiate(explosionVFX, transform.position + Vector3.up * 1.0f, Quaternion.identity);
             }
 
             if (GameManager.Instance != null)
             {
                 GameManager.Instance.OnGameOver();
-            }
-        }
-
-        private void DetachPartWithBlast(Transform part, float blastForce)
-        {
-            if (part == null) return;
-            part.SetParent(null, true);
-            Rigidbody partRb = part.gameObject.AddComponent<Rigidbody>();
-            partRb.mass = 40f;
-            Vector3 blastDir = Vector3.up * 1.2f + Random.insideUnitSphere * 0.5f;
-            partRb.AddForce(blastDir * blastForce, ForceMode.Impulse);
-            partRb.AddTorque(Random.insideUnitSphere * 20f, ForceMode.Impulse);
-        }
-
-        public void ApplyKnockback(Vector3 forceDirection, float forceMagnitude)
-        {
-            if (rb != null && !isExploded)
-            {
-                rb.AddForce(forceDirection.normalized * forceMagnitude, ForceMode.Impulse);
             }
         }
     }

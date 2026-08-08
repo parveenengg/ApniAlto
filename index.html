@@ -3,13 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CAR RUSH - Web App</title>
+    <title>CAR RUSH - Complete Cross-Platform 3D Driving Game</title>
     <style>
         * {
             box-sizing: border-box;
             margin: 0;
             padding: 0;
             user-select: none;
+            -webkit-user-select: none;
         }
         body, html {
             width: 100%;
@@ -35,8 +36,8 @@
             height: 100%;
             display: flex;
             z-index: 50;
-            background: rgba(7, 11, 20, 0.75);
-            backdrop-filter: blur(4px);
+            background: rgba(7, 11, 20, 0.80);
+            backdrop-filter: blur(6px);
             transition: opacity 0.3s ease, pointer-events 0.3s ease;
         }
         #app-dashboard.hidden {
@@ -303,9 +304,7 @@
             gap: 8px;
             cursor: pointer;
         }
-        .action-pill-btn:hover {
-            background: #2563eb;
-        }
+        .action-pill-btn:hover { background: #2563eb; }
 
         .garage-container {
             display: flex;
@@ -515,12 +514,6 @@
             gap: 20px;
             width: 100%;
         }
-        .settings-subnav {
-            width: 180px;
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-        }
         .settings-panel {
             flex: 1;
             background: #0d1527;
@@ -587,11 +580,35 @@
             border: 2px solid rgba(255, 255, 255, 0.18); border-radius: 12px;
             padding: 10px 18px; color: #ffffff; display: flex; align-items: center; gap: 12px;
         }
-        .score-text { font-size: 22px; font-weight: 800; color: #ffd700; }
-        .health-bar-container { width: 160px; height: 14px; background: rgba(255, 255, 255, 0.2); border-radius: 7px; overflow: hidden; }
+        .score-text { font-size: 20px; font-weight: 800; color: #ffd700; }
+        .timer-text { font-size: 20px; font-weight: 900; color: #38bdf8; font-family: monospace; }
+        .health-bar-container { width: 140px; height: 14px; background: rgba(255, 255, 255, 0.2); border-radius: 7px; overflow: hidden; }
         .health-bar-fill { width: 100%; height: 100%; background: linear-gradient(90deg, #ef4444, #f59e0b 50%, #10b981); transition: width 0.3s ease-out; }
-        .integrity-text { font-size: 14px; font-weight: 700; color: #4ade80; min-width: 110px; }
-        .tire-count-badge { background: #3b82f6; color: white; font-weight: 800; padding: 3px 8px; border-radius: 6px; font-size: 13px; }
+        .integrity-text { font-size: 13px; font-weight: 700; color: #4ade80; min-width: 100px; }
+        .tire-count-badge { background: #3b82f6; color: white; font-weight: 800; padding: 3px 8px; border-radius: 6px; font-size: 12px; }
+
+        /* Countdown Overlay */
+        #countdown-overlay {
+            position: absolute; top: 35%; left: 50%; transform: translate(-50%, -50%);
+            font-size: 84px; font-weight: 900; font-style: italic; color: #f59e0b;
+            text-shadow: 0 8px 24px rgba(0,0,0,0.8); z-index: 40; display: none;
+        }
+
+        /* Mobile Touch Controls */
+        #touch-controls-overlay {
+            position: absolute; bottom: 20px; left: 0; width: 100%; padding: 0 30px;
+            display: flex; justify-content: space-between; align-items: flex-end;
+            z-index: 30; opacity: 0; pointer-events: none;
+        }
+        #touch-controls-overlay.active { opacity: 1; pointer-events: auto; }
+        .touch-btn {
+            width: 70px; height: 70px; border-radius: 50%; background: rgba(15, 23, 42, 0.75);
+            border: 2px solid rgba(255, 255, 255, 0.3); color: white; font-size: 28px;
+            display: flex; align-items: center; justify-content: center; cursor: pointer;
+            box-shadow: 0 6px 16px rgba(0,0,0,0.4);
+        }
+        .touch-btn:active { background: #2563eb; transform: scale(0.95); }
+
         .controls-hint {
             position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%);
             background: rgba(13, 21, 39, 0.82); backdrop-filter: blur(6px); color: #e0e6ed;
@@ -625,6 +642,7 @@
 </head>
 <body>
     <div id="canvas-container"></div>
+    <div id="countdown-overlay">3</div>
 
     <!-- MAIN DASHBOARD -->
     <div id="app-dashboard">
@@ -675,19 +693,19 @@
                 </div>
 
                 <div class="home-cards-row">
-                    <div class="mode-card free-play" onclick="navTo('maps')">
+                    <div class="mode-card free-play" onclick="selectModeAndNav('freeplay')">
                         <div class="mode-card-title">FREE PLAY</div>
                         <div class="mode-icon-ring">🏎️</div>
                         <div class="mode-desc-text">Drive around and enjoy the ride!</div>
                     </div>
 
-                    <div class="mode-card checkpoints" onclick="navTo('maps')">
+                    <div class="mode-card checkpoints" onclick="selectModeAndNav('checkpoints')">
                         <div class="mode-card-title">CHECKPOINTS</div>
                         <div class="mode-icon-ring">📍</div>
                         <div class="mode-desc-text">Reach all checkpoints as fast as you can!</div>
                     </div>
 
-                    <div class="mode-card sprint" onclick="navTo('maps')">
+                    <div class="mode-card sprint" onclick="selectModeAndNav('sprint')">
                         <div class="mode-card-title">SPRINT MODE</div>
                         <div class="mode-icon-ring">⏱️</div>
                         <div class="mode-desc-text">Short track, big challenge!</div>
@@ -720,24 +738,21 @@
 
                     <div class="garage-right-specs">
                         <div class="spec-car-name" id="garage-car-name">BLAZE GT</div>
-                        <div class="spec-car-tier" id="garage-car-class">COMMON</div>
+                        <div class="spec-car-tier" id="garage-car-class">EPIC</div>
 
                         <div style="display: flex; flex-direction: column; gap: 8px; margin-top: 6px;">
                             <div>
                                 <div class="stat-line"><span>TOP SPEED</span><span id="val-speed">6.5</span></div>
                                 <div class="stat-bar-track"><div class="stat-bar-value" id="bar-speed" style="width: 65%;"></div></div>
                             </div>
-
                             <div>
                                 <div class="stat-line"><span>ACCELERATION</span><span id="val-accel">5.0</span></div>
                                 <div class="stat-bar-track"><div class="stat-bar-value" id="bar-accel" style="width: 50%;"></div></div>
                             </div>
-
                             <div>
                                 <div class="stat-line"><span>HANDLING</span><span id="val-handling">6.0</span></div>
                                 <div class="stat-bar-track"><div class="stat-bar-value" id="bar-handling" style="width: 60%;"></div></div>
                             </div>
-
                             <div>
                                 <div class="stat-line"><span>BRAKING</span><span id="val-braking">5.5</span></div>
                                 <div class="stat-bar-track"><div class="stat-bar-value" id="bar-braking" style="width: 55%;"></div></div>
@@ -815,19 +830,19 @@
             <!-- 4. MAP SELECTION SCREEN -->
             <div class="screen-view" id="view-maps">
                 <div class="map-mode-header">
-                    <div class="map-mode-tab active">FREE PLAY</div>
-                    <div class="map-mode-tab">CHECKPOINTS</div>
-                    <div class="map-mode-tab">SPRINT MODE</div>
+                    <div class="map-mode-tab active" id="tab-freeplay" onclick="switchModeTab('freeplay')">FREE PLAY</div>
+                    <div class="map-mode-tab" id="tab-checkpoints" onclick="switchModeTab('checkpoints')">CHECKPOINTS</div>
+                    <div class="map-mode-tab" id="tab-sprint" onclick="switchModeTab('sprint')">SPRINT MODE</div>
                 </div>
 
                 <div class="maps-grid">
-                    <div class="map-tile selected">
+                    <div class="map-tile selected" onclick="selectMap('green_valley')">
                         <div class="map-name">GREEN VALLEY ✓</div>
                     </div>
-                    <div class="map-tile">
+                    <div class="map-tile" onclick="selectMap('desert_run')">
                         <div class="map-name">DESERT RUN</div>
                     </div>
-                    <div class="map-tile">
+                    <div class="map-tile" onclick="selectMap('coastal_drive')">
                         <div class="map-name">COASTAL DRIVE</div>
                     </div>
                     <div class="map-tile">
@@ -859,26 +874,26 @@
                     <div class="settings-panel">
                         <div style="font-size: 11px; font-weight: 900; color: #94a3b8; letter-spacing: 1px;">CONTROL TYPE</div>
                         <div class="control-types-grid">
-                            <div class="control-type-card">📱<br>TILT</div>
-                            <div class="control-type-card">⬆️<br>BUTTONS</div>
-                            <div class="control-type-card selected">☸️<br>STEERING WHEEL ✓</div>
+                            <div class="control-type-card" id="ctrl-tilt" onclick="setControlType('tilt')">📱<br>TILT</div>
+                            <div class="control-type-card" id="ctrl-buttons" onclick="setControlType('buttons')">⬆️<br>BUTTONS</div>
+                            <div class="control-type-card selected" id="ctrl-wheel" onclick="setControlType('wheel')">☸️<br>STEERING WHEEL ✓</div>
                         </div>
 
                         <div style="display: flex; flex-direction: column; gap: 6px; margin-top: 10px;">
                             <div style="display: flex; justify-content: space-between; font-size: 12px; font-weight: 800;">
-                                <span>SENSITIVITY</span><span>70%</span>
+                                <span>SENSITIVITY</span><span id="sens-val">70%</span>
                             </div>
-                            <input type="range" min="0" max="100" value="70">
+                            <input type="range" min="10" max="100" value="70" oninput="document.getElementById('sens-val').innerText=this.value+'%'">
                         </div>
 
                         <div class="toggle-switch-row">
                             <span>VIBRATION</span>
-                            <div class="toggle-pill on"><div class="toggle-thumb"></div></div>
+                            <div class="toggle-pill on" id="toggle-vib" onclick="this.classList.toggle('on'); this.classList.toggle('off');"><div class="toggle-thumb"></div></div>
                         </div>
 
                         <div class="toggle-switch-row">
                             <span>AUTO ACCELERATE</span>
-                            <div class="toggle-pill off"><div class="toggle-thumb"></div></div>
+                            <div class="toggle-pill off" id="toggle-auto" onclick="this.classList.toggle('on'); this.classList.toggle('off');"><div class="toggle-thumb"></div></div>
                         </div>
                     </div>
                 </div>
@@ -888,11 +903,26 @@
 
     <!-- IN-GAME HUD -->
     <div id="hud">
-        <div class="hud-card"><span class="score-text" id="score-display">Coins: 0 / 12</span></div>
+        <div class="hud-card" id="hud-score-card"><span class="score-text" id="score-display">Coins: 0 / 12</span></div>
+        <div class="hud-card" id="hud-checkpoint-card" style="display:none;"><span class="score-text" id="checkpoint-display" style="color:#38bdf8;">CHECKPOINT 0 / 10</span></div>
+        <div class="hud-card" id="hud-timer-card" style="display:none;"><span class="timer-text" id="timer-display">00:00.00</span></div>
         <div class="hud-card">
             <span class="integrity-text" id="integrity-text">Integrity: 100 / 100</span>
             <div class="health-bar-container"><div class="health-bar-fill" id="health-fill"></div></div>
             <span class="tire-count-badge" id="tire-badge">🛞 4 Tires</span>
+        </div>
+    </div>
+
+    <!-- Mobile Touch Controls -->
+    <div id="touch-controls-overlay">
+        <div style="display:flex; gap:12px;">
+            <div class="touch-btn" onmousedown="keys['a']=true" onmouseup="keys['a']=false" ontouchstart="keys['a']=true" ontouchend="keys['a']=false">◀</div>
+            <div class="touch-btn" onmousedown="keys['d']=true" onmouseup="keys['d']=false" ontouchstart="keys['d']=true" ontouchend="keys['d']=false">▶</div>
+        </div>
+        <div style="display:flex; gap:12px;">
+            <div class="touch-btn" style="background:#ef4444;" onmousedown="keys['s']=true" onmouseup="keys['s']=false" ontouchstart="keys['s']=true" ontouchend="keys['s']=false">⏹</div>
+            <div class="touch-btn" style="background:#22c55e;" onmousedown="keys['w']=true" onmouseup="keys['w']=false" ontouchstart="keys['w']=true" ontouchend="keys['w']=false">▲</div>
+            <div class="touch-btn" style="background:#f59e0b;" onclick="triggerJump()">🦘</div>
         </div>
     </div>
 
@@ -908,8 +938,9 @@
     <!-- Modals -->
     <div class="modal-backdrop" id="level-complete-modal">
         <div class="modal-card">
-            <div class="modal-title">Level Complete! 🎉</div>
-            <div id="final-score-text">Coins Collected: 12 / 12</div>
+            <div class="modal-title" id="complete-modal-title">Level Complete! 🎉</div>
+            <div id="final-score-text" style="font-size:16px; font-weight:800; margin-bottom:8px;">Coins Collected: 12 / 12</div>
+            <div id="final-time-text" style="font-size:14px; color:#38bdf8; font-weight:800;">Time: 00:42.31</div>
             <div class="btn-group">
                 <button class="btn btn-primary" onclick="restartGame()">Play Again</button>
                 <button class="btn btn-secondary" onclick="returnToDashboard()">Home Menu</button>
@@ -932,7 +963,6 @@
         // Audio Synthesizer
         const AudioCtx = window.AudioContext || window.webkitAudioContext;
         let audioCtx = null;
-
         function initAudio() { if (!audioCtx) audioCtx = new AudioCtx(); }
         function playCoinSound() {
             initAudio(); if (!audioCtx) return;
@@ -986,6 +1016,8 @@
         // UNLIMITED MONEY & GEMS (100,000,000)
         let userGoldCoins = 100000000;
         let userGems = 100000000;
+        let selectedGameMode = 'freeplay'; // 'freeplay', 'checkpoints', 'sprint'
+        let selectedMapId = 'green_valley';
 
         const carsCatalog = [
             { id: 'mustang', name: 'BLAZE GT', cost: 0, unlocked: true, icon: '🏎️', color: 0xd97706, roofColor: 0x000000, speed: 6.5, accel: 5.0, handling: 6.0, braking: 5.5 },
@@ -1005,6 +1037,30 @@
             if (view) view.classList.add('active');
 
             if (screenId === 'garage') renderGaragePanel();
+        }
+
+        function selectModeAndNav(mode) {
+            selectedGameMode = mode;
+            switchModeTab(mode);
+            navTo('maps');
+        }
+
+        function switchModeTab(mode) {
+            selectedGameMode = mode;
+            document.querySelectorAll('.map-mode-tab').forEach(el => el.classList.remove('active'));
+            const activeTab = document.getElementById(`tab-${mode}`);
+            if (activeTab) activeTab.classList.add('active');
+        }
+
+        function selectMap(mapId) {
+            selectedMapId = mapId;
+            document.querySelectorAll('.map-tile').forEach(el => el.classList.remove('selected'));
+            event.currentTarget.classList.add('selected');
+        }
+
+        function setControlType(type) {
+            document.querySelectorAll('.control-type-card').forEach(el => el.classList.remove('selected'));
+            document.getElementById(`ctrl-${type}`).classList.add('selected');
         }
 
         function addBonusCoins() { userGoldCoins += 10000000; updateCurrencyUI(); }
@@ -1037,13 +1093,13 @@
 
             const currentCar = carsCatalog.find(c => c.id === activeCarId) || carsCatalog[0];
             document.getElementById('garage-car-name').innerText = currentCar.name;
-            document.getElementById('val-speed').innerText = currentCar.speed;
+            document.getElementById('val-speed').innerText = currentCar.speed.toFixed(1);
             document.getElementById('bar-speed').style.width = (currentCar.speed * 10) + '%';
-            document.getElementById('val-accel').innerText = currentCar.accel;
+            document.getElementById('val-accel').innerText = currentCar.accel.toFixed(1);
             document.getElementById('bar-accel').style.width = (currentCar.accel * 10) + '%';
-            document.getElementById('val-handling').innerText = currentCar.handling;
+            document.getElementById('val-handling').innerText = currentCar.handling.toFixed(1);
             document.getElementById('bar-handling').style.width = (currentCar.handling * 10) + '%';
-            document.getElementById('val-braking').innerText = currentCar.braking;
+            document.getElementById('val-braking').innerText = currentCar.braking.toFixed(1);
             document.getElementById('bar-braking').style.width = (currentCar.braking * 10) + '%';
         }
 
@@ -1059,9 +1115,10 @@
                 userGoldCoins -= 2000;
                 currentCar.speed = Math.min(10, currentCar.speed + 0.5);
                 currentCar.accel = Math.min(10, currentCar.accel + 0.5);
+                currentCar.handling = Math.min(10, currentCar.handling + 0.5);
                 updateCurrencyUI();
                 renderGaragePanel();
-                alert(`🚀 ${currentCar.name} Upgraded!`);
+                alert(`🚀 ${currentCar.name} Upgraded (+5% Stats)!`);
             }
         }
 
@@ -1083,6 +1140,7 @@
             isPlaying = true;
             document.getElementById('app-dashboard').classList.add('hidden');
             document.getElementById('hud').classList.add('active');
+            document.getElementById('touch-controls-overlay').classList.add('active');
             document.getElementById('controls-hint').classList.add('active');
             document.getElementById('ingame-top-nav').classList.add('active');
             restartGame();
@@ -1092,6 +1150,7 @@
             isPlaying = false;
             document.getElementById('app-dashboard').classList.remove('hidden');
             document.getElementById('hud').classList.remove('active');
+            document.getElementById('touch-controls-overlay').classList.remove('active');
             document.getElementById('controls-hint').classList.remove('active');
             document.getElementById('ingame-top-nav').classList.remove('active');
             document.getElementById('level-complete-modal').classList.remove('active');
@@ -1101,10 +1160,15 @@
 
         // 3D Engine Setup
         let scene, camera, renderer, car, carBody, carRoof;
-        let attachedWheels = [], detachedPhysicsObjects = [], explosionParticles = [], coins = [], obstacles = [], finishZone;
+        let attachedWheels = [], detachedPhysicsObjects = [], explosionParticles = [], coins = [], obstacles = [], checkpointRings = [], finishZone;
         let score = 0, totalCoins = 12, maxHealth = 100, health = 100, isPlaying = false, isLevelComplete = false, isExploded = false, lastGlobalHitTime = 0;
+        let currentCheckpointIdx = 0, totalCheckpointsCount = 10, gameTimer = 0, timerInterval = null;
         const vehicleState = { speed: 0, maxSpeed: 0.35, acceleration: 0.015, deceleration: 0.01, turnSpeed: 0.035, angle: 0, x: 0, y: 0, z: -10, velocityY: 0 };
         const keys = {};
+
+        function triggerJump() {
+            if (vehicleState.y <= 0.05) { vehicleState.velocityY = 0.28; playJumpSound(); }
+        }
 
         function init3D() {
             const container = document.getElementById('canvas-container');
@@ -1129,10 +1193,11 @@
             createVehicle();
             createCoins();
             createObstacles();
+            createCheckpoints();
             createFinishZone();
 
             window.addEventListener('keydown', (e) => {
-                if (e.key === ' ' || e.code === 'Space') { keys['space'] = true; e.preventDefault(); }
+                if (e.key === ' ' || e.code === 'Space') { keys['space'] = true; triggerJump(); e.preventDefault(); }
                 else { keys[e.key.toLowerCase()] = true; }
             });
             window.addEventListener('keyup', (e) => {
@@ -1237,6 +1302,20 @@
             obstacles.push({ mesh: mesh, initialX: x, y: y, z: z, isMoving: isMoving, range: range, speed: speed, radius: 1.8, height: height });
         }
 
+        function createCheckpoints() {
+            checkpointRings = [];
+            const ringGeo = new THREE.TorusGeometry(3.5, 0.4, 16, 32);
+            const activeMat = new THREE.MeshStandardMaterial({ color: 0x22c55e, emissive: 0x15803d });
+            const inactiveMat = new THREE.MeshStandardMaterial({ color: 0x64748b, transparent: true, opacity: 0.4 });
+
+            [10, 22, 34, 46, 58, 70, 82, 94, 106, 118].forEach((z, i) => {
+                const ring = new THREE.Mesh(ringGeo, i === 0 ? activeMat : inactiveMat);
+                ring.position.set((i % 2 === 0 ? -3 : 3), 2.5, z);
+                scene.add(ring);
+                checkpointRings.push({ mesh: ring, activeMat: activeMat, inactiveMat: inactiveMat, index: i, passed: false });
+            });
+        }
+
         function createFinishZone() {
             const archGroup = new THREE.Group();
             const pillarGeo = new THREE.BoxGeometry(1.5, 8, 1.5);
@@ -1252,7 +1331,7 @@
         function animate() {
             requestAnimationFrame(animate);
             if (isPlaying && !isLevelComplete && !isExploded) {
-                updateVehicle(); updateCoins(); updateObstacles(); checkFinishLine();
+                updateVehicle(); updateCoins(); updateObstacles(); updateCheckpointsLogic(); checkFinishLine();
             } else if (!isPlaying) {
                 car.rotation.y += 0.008;
             }
@@ -1261,8 +1340,10 @@
         }
 
         function updateVehicle() {
+            const currentCar = carsCatalog.find(c => c.id === activeCarId) || carsCatalog[0];
             const wheelFactor = attachedWheels.length > 0 ? (attachedWheels.length / 4.0) : 1.0;
-            const effectiveMaxSpeed = vehicleState.maxSpeed * (0.3 + 0.7 * wheelFactor);
+            const effectiveMaxSpeed = (currentCar.speed * 0.055) * (0.3 + 0.7 * wheelFactor);
+
             if (keys['w'] || keys['arrowup']) vehicleState.speed = Math.min(vehicleState.speed + vehicleState.acceleration, effectiveMaxSpeed);
             else if (keys['s'] || keys['arrowdown']) vehicleState.speed = Math.max(vehicleState.speed - vehicleState.acceleration, -effectiveMaxSpeed * 0.5);
             else {
@@ -1274,7 +1355,6 @@
                 if (keys['a'] || keys['arrowleft']) vehicleState.angle += vehicleState.turnSpeed * dir;
                 if (keys['d'] || keys['arrowright']) vehicleState.angle -= vehicleState.turnSpeed * dir;
             }
-            if (keys['space'] && vehicleState.y <= 0.05) { vehicleState.velocityY = 0.28; playJumpSound(); }
             vehicleState.y += vehicleState.velocityY;
             if (vehicleState.y > 0) vehicleState.velocityY -= 0.014; else { vehicleState.y = 0; vehicleState.velocityY = 0; }
             vehicleState.x += Math.sin(vehicleState.angle) * vehicleState.speed;
@@ -1299,6 +1379,30 @@
                     if (health <= 0) triggerVehicleBlast();
                 }
             });
+        }
+
+        function updateCheckpointsLogic() {
+            if (selectedGameMode !== 'checkpoints') return;
+            if (currentCheckpointIdx >= checkpointRings.length) return;
+
+            const targetRing = checkpointRings[currentCheckpointIdx];
+            const dx = car.position.x - targetRing.mesh.position.x;
+            const dz = car.position.z - targetRing.mesh.position.z;
+
+            if (Math.sqrt(dx * dx + dz * dz) < 3.8) {
+                targetRing.passed = true;
+                targetRing.mesh.material = targetRing.inactiveMat;
+                currentCheckpointIdx++;
+                playCoinSound();
+                document.getElementById('checkpoint-display').innerText = `CHECKPOINT ${currentCheckpointIdx} / ${totalCheckpointsCount}`;
+
+                if (currentCheckpointIdx < checkpointRings.length) {
+                    checkpointRings[currentCheckpointIdx].mesh.material = checkpointRings[currentCheckpointIdx].activeMat;
+                } else {
+                    // Checkpoints Mode Complete!
+                    finishLevelComplete();
+                }
+            }
         }
 
         function updateIntegrityUI() {
@@ -1352,29 +1456,60 @@
                 }
             });
         }
+
         function checkFinishLine() {
             if (car.position.z >= finishZone.z && Math.abs(car.position.x) < finishZone.width / 2) {
-                isLevelComplete = true; playVictorySound();
-                document.getElementById('final-score-text').innerText = `Coins Collected: ${score} / ${totalCoins}`;
-                document.getElementById('level-complete-modal').classList.add('active');
+                if (selectedGameMode !== 'checkpoints') {
+                    finishLevelComplete();
+                }
             }
         }
+
+        function finishLevelComplete() {
+            isLevelComplete = true; playVictorySound(); clearInterval(timerInterval);
+            document.getElementById('final-score-text').innerText = `Coins Collected: ${score} / ${totalCoins}`;
+            document.getElementById('final-time-text').innerText = `Time: ${(gameTimer / 10).toFixed(2)}s`;
+            document.getElementById('level-complete-modal').classList.add('active');
+        }
+
         function updateCamera() {
             const camOffset = new THREE.Vector3(0, 6, -12); camOffset.applyAxisAngle(new THREE.Vector3(0, 1, 0), vehicleState.angle);
             camera.position.lerp(car.position.clone().add(camOffset), 0.1);
             camera.lookAt(car.position.clone().add(new THREE.Vector3(0, 1.5, 0)));
         }
         function onWindowResize() { camera.aspect = window.innerWidth / window.innerHeight; camera.updateProjectionMatrix(); renderer.setSize(window.innerWidth, window.innerHeight); }
+        
         function restartGame() {
             detachedPhysicsObjects.forEach(obj => scene.remove(obj.mesh)); detachedPhysicsObjects = [];
             if (car) scene.remove(car);
             score = 0; health = 100; isLevelComplete = false; isExploded = false; lastGlobalHitTime = 0;
+            currentCheckpointIdx = 0; gameTimer = 0; clearInterval(timerInterval);
             vehicleState.x = 0; vehicleState.y = 0; vehicleState.z = -10; vehicleState.angle = 0; vehicleState.speed = 0; vehicleState.velocityY = 0;
+
             document.getElementById('score-display').innerText = `Coins: 0 / ${totalCoins}`;
+            document.getElementById('checkpoint-display').innerText = `CHECKPOINT 0 / ${totalCheckpointsCount}`;
+            document.getElementById('timer-display').innerText = `00:00.00`;
+            
+            // HUD Cards display per mode
+            document.getElementById('hud-checkpoint-card').style.display = (selectedGameMode === 'checkpoints') ? 'flex' : 'none';
+            document.getElementById('hud-timer-card').style.display = (selectedGameMode === 'sprint' || selectedGameMode === 'checkpoints') ? 'flex' : 'none';
+
             document.getElementById('level-complete-modal').classList.remove('active');
             document.getElementById('game-over-modal').classList.remove('active');
+
+            if (selectedGameMode === 'sprint' || selectedGameMode === 'checkpoints') {
+                timerInterval = setInterval(() => {
+                    if (isPlaying && !isLevelComplete && !isExploded) {
+                        gameTimer += 1;
+                        let sec = (gameTimer / 10).toFixed(2);
+                        document.getElementById('timer-display').innerText = `00:${sec < 10 ? '0' : ''}${sec}`;
+                    }
+                }, 100);
+            }
+
             createVehicle(); updateIntegrityUI();
             coins.forEach(c => { if (c.collected) { c.collected = false; scene.add(c.mesh); } });
+            checkpointRings.forEach((r, i) => { r.passed = false; r.mesh.material = (i === 0) ? r.activeMat : r.inactiveMat; });
         }
 
         window.onload = () => { init3D(); renderGaragePanel(); };

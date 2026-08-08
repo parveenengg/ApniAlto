@@ -4,30 +4,37 @@ using System.Collections.Generic;
 namespace VehicleCoinCollector
 {
     [System.Serializable]
-    public class CarItem
+    public class VehicleData
     {
-        public string carID;
-        public string displayName;
-        public int cost;
+        public string id;
+        public string name;
+        public string rarity;
+        public int costCoins;
         public bool isUnlocked;
+        public float topSpeed;      // Base 1-10 scale
+        public float acceleration;  // Base 1-10 scale
+        public float handling;      // Base 1-10 scale
+        public float braking;       // Base 1-10 scale
         public Color bodyColor;
         public Color roofColor;
-        public float topSpeed;
-        public float acceleration;
-        public bool isHoverCar;
     }
 
     /// <summary>
-    /// Garage Manager: manages vehicle catalog (Alto, Verna, Lamborghini, Mustang, Flying Car),
-    /// coin purchasing, and equipping active vehicle for gameplay.
+    /// Garage & Vehicle Selection Manager with stat upgrade support (+5% for coins).
     /// </summary>
     public class GarageManager : MonoBehaviour
     {
         public static GarageManager Instance { get; private set; }
 
-        [Header("Car Catalog")]
-        public List<CarItem> carCatalog = new List<CarItem>();
-        public int activeCarIndex = 0;
+        public List<VehicleData> Vehicles = new List<VehicleData>
+        {
+            new VehicleData { id = "mustang", name = "BLAZE GT", rarity = "EPIC", costCoins = 0, isUnlocked = true, topSpeed = 6.5f, acceleration = 5.0f, handling = 6.0f, braking = 5.5f, bodyColor = new Color(0.85f, 0.46f, 0.02f), roofColor = Color.black },
+            new VehicleData { id = "verna", name = "BLUE THUNDER", rarity = "RARE", costCoins = 15, isUnlocked = true, topSpeed = 7.2f, acceleration = 6.0f, handling = 6.5f, braking = 6.0f, bodyColor = new Color(0.14f, 0.38f, 0.92f), roofColor = new Color(0.12f, 0.16f, 0.23f) },
+            new VehicleData { id = "lamborghini", name = "VIPER R", rarity = "LEGENDARY", costCoins = 50, isUnlocked = true, topSpeed = 9.5f, acceleration = 9.0f, handling = 8.5f, braking = 8.0f, bodyColor = new Color(0.91f, 0.70f, 0.03f), roofColor = new Color(0.06f, 0.09f, 0.16f) },
+            new VehicleData { id = "alto", name = "WHITE SEDAN", rarity = "COMMON", costCoins = 2, isUnlocked = true, topSpeed = 6.0f, acceleration = 5.5f, handling = 6.0f, braking = 5.5f, bodyColor = new Color(0.97f, 0.98f, 0.99f), roofColor = new Color(0.12f, 0.16f, 0.23f) }
+        };
+
+        public VehicleData SelectedVehicle { get; private set; }
 
         private void Awake()
         {
@@ -37,115 +44,80 @@ namespace VehicleCoinCollector
                 return;
             }
             Instance = this;
-            InitializeCatalog();
+            DontDestroyOnLoad(gameObject);
+            SelectedVehicle = Vehicles[0];
         }
 
-        private void InitializeCatalog()
+        private void Start()
         {
-            carCatalog.Clear();
-
-            // 1. Alto (Free)
-            carCatalog.Add(new CarItem
+            if (SaveManager.Instance != null && !string.IsNullOrEmpty(SaveManager.Instance.Data.selectedCarId))
             {
-                carID = "alto",
-                displayName = "Alto",
-                cost = 0,
-                isUnlocked = true,
-                bodyColor = new Color(0.1f, 0.7f, 0.8f), // Cyan
-                roofColor = Color.white,
-                topSpeed = 11f,
-                acceleration = 12f,
-                isHoverCar = false
-            });
-
-            // 2. Verna (15 Coins)
-            carCatalog.Add(new CarItem
-            {
-                carID = "verna",
-                displayName = "Verna",
-                cost = 15,
-                isUnlocked = false,
-                bodyColor = new Color(0.1f, 0.4f, 0.9f), // Cobalt Blue
-                roofColor = new Color(0.1f, 0.2f, 0.4f),
-                topSpeed = 13f,
-                acceleration = 14f,
-                isHoverCar = false
-            });
-
-            // 3. Lamborghini (50 Coins)
-            carCatalog.Add(new CarItem
-            {
-                carID = "lamborghini",
-                displayName = "Lamborghini",
-                cost = 50,
-                isUnlocked = false,
-                bodyColor = new Color(1.0f, 0.85f, 0.0f), // Yellow Supercar
-                roofColor = new Color(0.15f, 0.15f, 0.15f),
-                topSpeed = 16f,
-                acceleration = 18f,
-                isHoverCar = false
-            });
-
-            // 4. Mustang (150 Coins)
-            carCatalog.Add(new CarItem
-            {
-                carID = "mustang",
-                displayName = "Mustang",
-                cost = 150,
-                isUnlocked = false,
-                bodyColor = new Color(0.85f, 0.1f, 0.1f), // Crimson Red
-                roofColor = Color.black,
-                topSpeed = 15f,
-                acceleration = 16f,
-                isHoverCar = false
-            });
-
-            // 5. Flying Car (2 Coins)
-            carCatalog.Add(new CarItem
-            {
-                carID = "flying_car",
-                displayName = "Flying Car",
-                cost = 2,
-                isUnlocked = false,
-                bodyColor = new Color(0.0f, 0.9f, 0.95f), // Neon Cyan Hover Car
-                roofColor = new Color(0.6f, 0.2f, 0.9f), // Purple
-                topSpeed = 18f,
-                acceleration = 20f,
-                isHoverCar = true
-            });
-        }
-
-        public CarItem GetActiveCar()
-        {
-            if (activeCarIndex >= 0 && activeCarIndex < carCatalog.Count)
-            {
-                return carCatalog[activeCarIndex];
+                SelectVehicle(SaveManager.Instance.Data.selectedCarId);
             }
-            return carCatalog[0];
         }
 
-        public bool BuyCar(int index)
+        public void SelectVehicle(string id)
         {
-            if (index < 0 || index >= carCatalog.Count) return false;
-            CarItem car = carCatalog[index];
-
-            if (car.isUnlocked) return true;
-
-            int coins = (ScoreManager.Instance != null) ? ScoreManager.Instance.currentCoins : 12850;
-            if (coins >= car.cost)
+            VehicleData v = Vehicles.Find(x => x.id.Equals(id, System.StringComparison.OrdinalIgnoreCase));
+            if (v != null)
             {
-                car.isUnlocked = true;
-                EquipCar(index);
+                SelectedVehicle = v;
+                if (SaveManager.Instance != null)
+                {
+                    SaveManager.Instance.Data.selectedCarId = id;
+                    SaveManager.Instance.Save();
+                }
+            }
+        }
+
+        public bool UpgradeSelectedVehicleStat(string statName, int cost = 2000)
+        {
+            if (SaveManager.Instance == null || SelectedVehicle == null) return false;
+
+            if (SaveManager.Instance.DeductCoins(cost))
+            {
+                if (statName.Equals("speed", System.StringComparison.OrdinalIgnoreCase))
+                {
+                    SelectedVehicle.topSpeed = Mathf.Min(10.0f, SelectedVehicle.topSpeed + 0.5f);
+                    SaveManager.Instance.Data.speedUpgradeLevel++;
+                }
+                else if (statName.Equals("accel", System.StringComparison.OrdinalIgnoreCase))
+                {
+                    SelectedVehicle.acceleration = Mathf.Min(10.0f, SelectedVehicle.acceleration + 0.5f);
+                    SaveManager.Instance.Data.accelUpgradeLevel++;
+                }
+                else if (statName.Equals("handling", System.StringComparison.OrdinalIgnoreCase))
+                {
+                    SelectedVehicle.handling = Mathf.Min(10.0f, SelectedVehicle.handling + 0.5f);
+                    SaveManager.Instance.Data.handlingUpgradeLevel++;
+                }
+                else if (statName.Equals("braking", System.StringComparison.OrdinalIgnoreCase))
+                {
+                    SelectedVehicle.braking = Mathf.Min(10.0f, SelectedVehicle.braking + 0.5f);
+                    SaveManager.Instance.Data.brakingUpgradeLevel++;
+                }
+
+                SaveManager.Instance.Save();
+
+                // Apply immediately if in-game
+                PlayerVehicleController player = FindFirstObjectByType<PlayerVehicleController>();
+                if (player != null) player.ApplyUpgradedStats();
+
                 return true;
             }
             return false;
         }
 
-        public void EquipCar(int index)
+        public void SetSelectedVehicleColor(Color color)
         {
-            if (index >= 0 && index < carCatalog.Count && carCatalog[index].isUnlocked)
+            if (SelectedVehicle != null)
             {
-                activeCarIndex = index;
+                SelectedVehicle.bodyColor = color;
+                if (SaveManager.Instance != null)
+                {
+                    SaveManager.Instance.Data.carColorHex = "#" + ColorUtility.ToHtmlStringRGB(color);
+                    SaveManager.Instance.Save();
+                }
             }
         }
     }

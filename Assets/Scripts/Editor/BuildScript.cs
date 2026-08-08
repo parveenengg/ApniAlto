@@ -6,11 +6,11 @@ using System.IO;
 namespace VehicleCoinCollector.Editor
 {
     /// <summary>
-    /// Automated Unity Build Script to assemble the Release Android APK for ApniAlto / Car Rush.
+    /// Automated Unity Build Script for Mac Standalone, WebGL, and Android.
     /// </summary>
     public static class BuildScript
     {
-        public static void BuildAndroidAPK()
+        public static void BuildMacApp()
         {
             string outputDir = Path.Combine(Directory.GetCurrentDirectory(), "Builds");
             if (!Directory.Exists(outputDir))
@@ -18,15 +18,43 @@ namespace VehicleCoinCollector.Editor
                 Directory.CreateDirectory(outputDir);
             }
 
+            string appPath = Path.Combine(outputDir, "ApniAlto_CarRush.app");
+            string[] scenes = { "Assets/Scenes/VehicleCoinCollector.unity" };
+
+            Debug.Log("[BuildScript] Starting Standalone macOS App build at: " + appPath);
+            BuildPlayerOptions buildOptions = new BuildPlayerOptions
+            {
+                scenes = scenes,
+                locationPathName = appPath,
+                target = BuildTarget.StandaloneOSX,
+                options = BuildOptions.None
+            };
+
+            BuildReport report = BuildPipeline.BuildPlayer(buildOptions);
+            BuildSummary summary = report.summary;
+
+            if (summary.result == BuildResult.Succeeded)
+            {
+                Debug.Log("[BuildScript] MAC APP BUILD SUCCEEDED! Path: " + appPath);
+            }
+            else
+            {
+                Debug.LogError("[BuildScript] MAC APP BUILD FAILED: " + summary.result);
+            }
+        }
+
+        public static void BuildAndroidAPK()
+        {
+            string outputDir = Path.Combine(Directory.GetCurrentDirectory(), "Builds");
+            if (!Directory.Exists(outputDir)) Directory.CreateDirectory(outputDir);
+
             string apkPath = Path.Combine(outputDir, "ApniAlto_CarRush.apk");
             string[] scenes = { "Assets/Scenes/VehicleCoinCollector.unity" };
 
-            Debug.Log("[BuildScript] Switching active build target to Android...");
             EditorUserBuildSettings.SwitchActiveBuildTarget(BuildTargetGroup.Android, BuildTarget.Android);
 
             PlayerSettings.companyName = "ParveenEngg";
             PlayerSettings.productName = "ApniAlto Car Rush";
-            PlayerSettings.SetApplicationIdentifier(BuildTargetGroup.Android, "com.parveenengg.apnialto");
 
             BuildPlayerOptions buildOptions = new BuildPlayerOptions
             {
@@ -36,17 +64,16 @@ namespace VehicleCoinCollector.Editor
                 options = BuildOptions.None
             };
 
-            Debug.Log("[BuildScript] Starting Android APK build at: " + apkPath);
             BuildReport report = BuildPipeline.BuildPlayer(buildOptions);
             BuildSummary summary = report.summary;
 
             if (summary.result == BuildResult.Succeeded)
             {
-                Debug.Log("[BuildScript] APK BUILD SUCCEEDED! Total size: " + summary.totalSize + " bytes. Output path: " + apkPath);
+                Debug.Log("[BuildScript] APK BUILD SUCCEEDED! Path: " + apkPath);
             }
             else
             {
-                Debug.LogError("[BuildScript] APK BUILD FAILED with result: " + summary.result + " Errors: " + summary.totalErrors);
+                Debug.LogError("[BuildScript] APK BUILD FAILED: " + summary.result);
             }
         }
     }
