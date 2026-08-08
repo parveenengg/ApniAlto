@@ -1053,22 +1053,115 @@
         }
 
         function createEnvironment() {
-            const groundGeo = new THREE.PlaneGeometry(80, 1040);
-            const groundMat = new THREE.MeshStandardMaterial({ color: 0x59bd59, roughness: 0.8 });
+            // Main Ground
+            const groundGeo = new THREE.PlaneGeometry(120, 1040);
+            const groundMat = new THREE.MeshStandardMaterial({ color: 0x4ade80, roughness: 0.9 });
             const ground = new THREE.Mesh(groundGeo, groundMat);
             ground.rotation.x = -Math.PI / 2; ground.position.set(0, -0.01, 500);
             scene.add(ground);
 
-            const roadGeo = new THREE.PlaneGeometry(20, 1020);
-            const roadMat = new THREE.MeshStandardMaterial({ color: 0x333842, roughness: 0.6 });
-            const road = new THREE.Mesh(roadGeo, roadMat);
-            road.rotation.x = -Math.PI / 2; road.position.set(0, 0, 500);
-            scene.add(road);
+            // Oceans (Left and Right)
+            const oceanGeo = new THREE.PlaneGeometry(200, 1040);
+            const oceanMat = new THREE.MeshStandardMaterial({ color: 0x0ea5e9, roughness: 0.1, transparent: true, opacity: 0.8 });
+            const oceanLeft = new THREE.Mesh(oceanGeo, oceanMat);
+            oceanLeft.rotation.x = -Math.PI / 2; oceanLeft.position.set(-160, -0.1, 500);
+            scene.add(oceanLeft);
+            const oceanRight = new THREE.Mesh(oceanGeo, oceanMat);
+            oceanRight.rotation.x = -Math.PI / 2; oceanRight.position.set(160, -0.1, 500);
+            scene.add(oceanRight);
 
-            for (let z = 0; z <= 1000; z += 16) {
-                createTree(-16 + (Math.random() * 2 - 1), z);
-                createTree(16 + (Math.random() * 2 - 1), z);
+            // Road segments with River crossings
+            const roadMat = new THREE.MeshStandardMaterial({ color: 0x333842, roughness: 0.7 });
+            const roadWidth = 30; // Wider road
+            
+            // Road parts
+            createRoadSegment(0, 240, roadWidth, roadMat);
+            createRiver(250);
+            createBridge(250, roadWidth);
+            
+            createRoadSegment(260, 280, roadWidth, roadMat);
+            createRiver(550);
+            createBridge(550, roadWidth);
+            
+            createRoadSegment(560, 460, roadWidth, roadMat); // from 560 to 1020
+
+            // Trees, Barricades and Mountains
+            for (let z = 0; z <= 1000; z += 20) {
+                // Trees
+                if(z < 240 || (z > 260 && z < 540) || z > 560) {
+                    createTree(-20 - (Math.random() * 10), z);
+                    createTree(20 + (Math.random() * 10), z);
+                    
+                    // Barricades (every 40 units)
+                    if (z % 40 === 0) {
+                        createBarricade(-16, z);
+                        createBarricade(16, z);
+                    }
+                }
+
+                // Mountains in distance
+                if (z % 100 === 0) {
+                    createMountain(-70 - Math.random()*20, z);
+                    createMountain(70 + Math.random()*20, z);
+                }
             }
+        }
+
+        function createRoadSegment(startZ, length, width, material) {
+            const geo = new THREE.PlaneGeometry(width, length);
+            const mesh = new THREE.Mesh(geo, material);
+            mesh.rotation.x = -Math.PI / 2; 
+            mesh.position.set(0, 0, startZ + length/2);
+            scene.add(mesh);
+        }
+
+        function createRiver(z) {
+            const geo = new THREE.PlaneGeometry(120, 20);
+            const mat = new THREE.MeshStandardMaterial({ color: 0x38bdf8, roughness: 0.2 });
+            const mesh = new THREE.Mesh(geo, mat);
+            mesh.rotation.x = -Math.PI / 2; 
+            mesh.position.set(0, -0.2, z);
+            scene.add(mesh);
+        }
+
+        function createBridge(z, width) {
+            const geo = new THREE.BoxGeometry(width, 0.5, 20);
+            const mat = new THREE.MeshStandardMaterial({ color: 0x78350f, roughness: 0.9 }); // brown wood
+            const mesh = new THREE.Mesh(geo, mat);
+            mesh.position.set(0, 0, z);
+            scene.add(mesh);
+        }
+
+        function createMountain(x, z) {
+            const height = 15 + Math.random() * 20;
+            const radius = 10 + Math.random() * 15;
+            const geo = new THREE.ConeGeometry(radius, height, 4);
+            const mat = new THREE.MeshStandardMaterial({ color: 0x64748b, roughness: 0.9 });
+            const mesh = new THREE.Mesh(geo, mat);
+            mesh.position.set(x, height/2, z);
+            mesh.rotation.y = Math.random() * Math.PI;
+            scene.add(mesh);
+            
+            // Snow cap
+            const snowGeo = new THREE.ConeGeometry(radius * 0.4, height * 0.4, 4);
+            const snowMat = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.9 });
+            const snow = new THREE.Mesh(snowGeo, snowMat);
+            snow.position.set(x, height - (height*0.2), z);
+            snow.rotation.y = mesh.rotation.y;
+            scene.add(snow);
+        }
+
+        function createBarricade(x, z) {
+            const geo = new THREE.BoxGeometry(3, 1, 1);
+            const mat = new THREE.MeshStandardMaterial({ color: 0xd97706 });
+            const mesh = new THREE.Mesh(geo, mat);
+            mesh.position.set(x, 0.5, z);
+            
+            // Add to scene Colliders so it's a solid obstacle
+            const box = new THREE.Box3().setFromObject(mesh);
+            sceneColliders.push(box);
+            
+            scene.add(mesh);
         }
 
         function createTree(x, z) {
@@ -1258,7 +1351,7 @@
             
             vehicleState.x += Math.sin(vehicleState.angle) * vehicleState.speed;
             vehicleState.z += Math.cos(vehicleState.angle) * vehicleState.speed;
-            vehicleState.x = Math.max(-28, Math.min(28, vehicleState.x));
+            vehicleState.x = Math.max(-14.5, Math.min(14.5, vehicleState.x));
             vehicleState.z = Math.max(-18, Math.min(1020, vehicleState.z));
             car.position.set(vehicleState.x, vehicleState.y, vehicleState.z);
             car.rotation.y = vehicleState.visualAngle;
