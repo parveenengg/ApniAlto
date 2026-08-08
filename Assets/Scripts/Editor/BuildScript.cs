@@ -19,7 +19,10 @@ namespace VehicleCoinCollector.Editor
             }
 
             string appPath = Path.Combine(outputDir, "ApniAlto_CarRush.app");
-            string[] scenes = { "Assets/Scenes/VehicleCoinCollector.unity" };
+            string[] scenes = {
+                "Assets/Scenes/GetStarted_Scene.unity",
+                "Assets/Scenes/VehicleCoinCollector.unity"
+            };
 
             Debug.Log("[BuildScript] Starting Standalone macOS App build at: " + appPath);
             BuildPlayerOptions buildOptions = new BuildPlayerOptions
@@ -49,7 +52,10 @@ namespace VehicleCoinCollector.Editor
             if (!Directory.Exists(outputDir)) Directory.CreateDirectory(outputDir);
 
             string apkPath = Path.Combine(outputDir, "ApniAlto_CarRush.apk");
-            string[] scenes = { "Assets/Scenes/VehicleCoinCollector.unity" };
+            string[] scenes = {
+                "Assets/Scenes/GetStarted_Scene.unity",
+                "Assets/Scenes/VehicleCoinCollector.unity"
+            };
 
             EditorUserBuildSettings.SwitchActiveBuildTarget(BuildTargetGroup.Android, BuildTarget.Android);
 

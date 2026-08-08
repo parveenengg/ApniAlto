@@ -4,16 +4,19 @@ using UnityEngine.SceneManagement;
 namespace VehicleCoinCollector
 {
     /// <summary>
-    /// Game State Manager: handles level complete condition, game restart, and quit/menu navigation.
+    /// Game State Manager: handles level complete condition, game restart, pause toggle,
+    /// return to menu, and quit/menu navigation.
     /// </summary>
     public class GameManager : MonoBehaviour
     {
         public static GameManager Instance { get; private set; }
 
-        public enum GameState { Playing, LevelComplete, GameOver }
+        public enum GameState { Playing, LevelComplete, GameOver, Paused }
 
         [Header("State")]
         public GameState CurrentState { get; private set; } = GameState.Playing;
+
+        private GameState stateBeforePause = GameState.Playing;
 
         private void Awake()
         {
@@ -24,6 +27,49 @@ namespace VehicleCoinCollector
             }
             Instance = this;
             Time.timeScale = 1f;
+        }
+
+        private void Update()
+        {
+            // Escape key toggles pause on desktop
+            if (Input.GetKeyDown(KeyCode.Escape))
+            {
+                if (CurrentState == GameState.Paused)
+                {
+                    ResumeGame();
+                }
+                else if (CurrentState == GameState.Playing)
+                {
+                    PauseGame();
+                }
+            }
+        }
+
+        public void PauseGame()
+        {
+            if (CurrentState != GameState.Playing) return;
+
+            stateBeforePause = CurrentState;
+            CurrentState = GameState.Paused;
+            Time.timeScale = 0f;
+
+            if (UIManager.Instance != null)
+            {
+                UIManager.Instance.ShowPauseModal();
+            }
+        }
+
+        public void ResumeGame()
+        {
+            if (CurrentState != GameState.Paused) return;
+
+            CurrentState = stateBeforePause;
+            Time.timeScale = 1f;
+
+            if (UIManager.Instance != null)
+            {
+                UIManager.Instance.HidePauseModal();
+            }
         }
 
         public void OnLevelComplete()
@@ -59,8 +105,19 @@ namespace VehicleCoinCollector
         public void RestartLevel()
         {
             Time.timeScale = 1f;
+            CurrentState = GameState.Playing;
             Scene activeScene = SceneManager.GetActiveScene();
             SceneManager.LoadScene(activeScene.name);
+        }
+
+        /// <summary>
+        /// Return to the main menu scene (GetStarted_Scene at index 0).
+        /// </summary>
+        public void ReturnToMenu()
+        {
+            Time.timeScale = 1f;
+            CurrentState = GameState.Playing;
+            SceneManager.LoadScene(0);
         }
 
         public void QuitGame()

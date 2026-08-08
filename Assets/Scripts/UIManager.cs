@@ -1,11 +1,13 @@
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.SceneManagement;
 using TMPro;
 
 namespace VehicleCoinCollector
 {
     /// <summary>
-    /// Master UI Manager for canvas modals, HUD, mobile touch controls, checkpoint counter, sprint timer, pause menu, and results screen.
+    /// UI Manager — HUD, pause modal, level complete modal, game over modal.
+    /// Simplified for Free Play mode only.
     /// </summary>
     public class UIManager : MonoBehaviour
     {
@@ -16,20 +18,12 @@ namespace VehicleCoinCollector
         public TextMeshProUGUI integrityText;
         public Image healthBarFill;
         public TextMeshProUGUI tireCountBadge;
-        public TextMeshProUGUI checkpointCounterText;
-        public TextMeshProUGUI raceTimerText;
-        public TextMeshProUGUI countdownText;
 
         [Header("Modals")]
         public GameObject levelCompleteModal;
         public TextMeshProUGUI finalScoreText;
         public GameObject gameOverModal;
         public GameObject pauseModal;
-        public GameObject settingsModal;
-
-        [Header("Mobile Touch Control Overlays")]
-        public GameObject steeringWheelOverlay;
-        public GameObject touchButtonsOverlay;
 
         private void Awake()
         {
@@ -44,7 +38,6 @@ namespace VehicleCoinCollector
         private void Start()
         {
             HideAllModals();
-            UpdateTouchControlOverlays();
         }
 
         public void UpdateScoreUI(int currentCoins, int totalCoins)
@@ -67,86 +60,37 @@ namespace VehicleCoinCollector
             }
             if (tireCountBadge != null)
             {
-                tireCountBadge.text = $"🛞 {tireCount} Tires";
+                tireCountBadge.text = $"Tires: {tireCount}";
             }
         }
 
         public void UpdateCheckpointCounter(int current, int total)
         {
-            if (checkpointCounterText != null)
-            {
-                checkpointCounterText.gameObject.SetActive(true);
-                checkpointCounterText.text = $"CHECKPOINT {current} / {total}";
-            }
-        }
-
-        public void UpdateRaceTimer(float timerSeconds)
-        {
-            if (raceTimerText != null)
-            {
-                raceTimerText.gameObject.SetActive(true);
-                int minutes = Mathf.FloorToInt(timerSeconds / 60F);
-                int seconds = Mathf.FloorToInt(timerSeconds % 60F);
-                int fraction = Mathf.FloorToInt((timerSeconds * 100F) % 100F);
-                raceTimerText.text = string.Format("{0:00}:{1:00}.{2:00}", minutes, seconds, fraction);
-            }
-        }
-
-        public void UpdateCountdown(float secondsRemaining)
-        {
-            if (countdownText != null)
-            {
-                if (secondsRemaining > 0f)
-                {
-                    countdownText.gameObject.SetActive(true);
-                    int sec = Mathf.CeilToInt(secondsRemaining);
-                    countdownText.text = sec > 0 ? sec.ToString() : "GO!";
-                }
-                else
-                {
-                    countdownText.gameObject.SetActive(false);
-                }
-            }
+            // Placeholder for future checkpoint mode
         }
 
         public void ShowLevelCompleteModal(int coins, int totalCoins)
         {
             HideAllModals();
-            if (levelCompleteModal != null)
-            {
-                levelCompleteModal.SetActive(true);
-            }
-            if (finalScoreText != null)
-            {
-                finalScoreText.text = $"Coins Collected: {coins} / {totalCoins}";
-            }
+            if (levelCompleteModal != null) levelCompleteModal.SetActive(true);
+            if (finalScoreText != null) finalScoreText.text = $"Coins Collected: {coins} / {totalCoins}";
         }
 
         public void ShowGameOverModal()
         {
             HideAllModals();
-            if (gameOverModal != null)
-            {
-                gameOverModal.SetActive(true);
-            }
+            if (gameOverModal != null) gameOverModal.SetActive(true);
         }
 
-        public void TogglePauseModal()
+        public void ShowPauseModal()
         {
-            if (pauseModal != null)
-            {
-                bool isPaused = !pauseModal.activeSelf;
-                pauseModal.SetActive(isPaused);
-                Time.timeScale = isPaused ? 0f : 1f;
-            }
+            HideAllModals();
+            if (pauseModal != null) pauseModal.SetActive(true);
         }
 
-        public void ToggleSettingsModal()
+        public void HidePauseModal()
         {
-            if (settingsModal != null)
-            {
-                settingsModal.SetActive(!settingsModal.activeSelf);
-            }
+            if (pauseModal != null) pauseModal.SetActive(false);
         }
 
         public void HideAllModals()
@@ -154,14 +98,6 @@ namespace VehicleCoinCollector
             if (levelCompleteModal != null) levelCompleteModal.SetActive(false);
             if (gameOverModal != null) gameOverModal.SetActive(false);
             if (pauseModal != null) pauseModal.SetActive(false);
-            if (settingsModal != null) settingsModal.SetActive(false);
-        }
-
-        public void UpdateTouchControlOverlays()
-        {
-            ControlType type = (InputManager.Instance != null) ? InputManager.Instance.ActiveControlType : ControlType.SteeringWheel;
-            if (steeringWheelOverlay != null) steeringWheelOverlay.SetActive(type == ControlType.SteeringWheel);
-            if (touchButtonsOverlay != null) touchButtonsOverlay.SetActive(type == ControlType.Buttons);
         }
 
         // Button Callbacks
@@ -172,8 +108,20 @@ namespace VehicleCoinCollector
 
         public void OnClickHomeMenu()
         {
-            Time.timeScale = 1f;
-            if (GameManager.Instance != null) GameManager.Instance.QuitGame();
+            if (GameManager.Instance != null)
+            {
+                GameManager.Instance.ReturnToMenu();
+            }
+            else
+            {
+                Time.timeScale = 1f;
+                SceneManager.LoadScene(0);
+            }
+        }
+
+        public void OnClickResume()
+        {
+            if (GameManager.Instance != null) GameManager.Instance.ResumeGame();
         }
     }
 }

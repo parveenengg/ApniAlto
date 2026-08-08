@@ -4,7 +4,7 @@ namespace VehicleCoinCollector
 {
     /// <summary>
     /// Vehicle Movement & Physics Controller.
-    /// Supports dynamic vehicle stats, raycast ground checks, jump mechanics, tire detachment, and explosion.
+    /// Supports keyboard controls (WASD/Arrows), jump mechanics, tire detachment, and explosion.
     /// </summary>
     public class PlayerVehicleController : MonoBehaviour
     {
@@ -35,7 +35,7 @@ namespace VehicleCoinCollector
 
         private void Start()
         {
-            ApplyUpgradedStats();
+            ApplyVehicleStats();
             currentIntegrity = maxIntegrity;
             if (UIManager.Instance != null)
             {
@@ -43,7 +43,7 @@ namespace VehicleCoinCollector
             }
         }
 
-        public void ApplyUpgradedStats()
+        public void ApplyVehicleStats()
         {
             if (GarageManager.Instance != null && GarageManager.Instance.SelectedVehicle != null)
             {
@@ -64,10 +64,10 @@ namespace VehicleCoinCollector
 
             CheckGrounded();
 
-            // Get Input from InputManager
-            float moveInput = (InputManager.Instance != null) ? InputManager.Instance.ThrottleInput : Input.GetAxis("Vertical");
-            float turnInput = (InputManager.Instance != null) ? InputManager.Instance.SteeringInput : Input.GetAxis("Horizontal");
-            bool jumpRequested = (InputManager.Instance != null) ? InputManager.Instance.JumpInput : Input.GetKeyDown(KeyCode.Space);
+            // Keyboard Controls (WASD / Arrow Keys)
+            float moveInput = Input.GetAxis("Vertical");    // W/S or Up/Down
+            float turnInput = Input.GetAxis("Horizontal");  // A/D or Left/Right
+            bool jumpRequested = Input.GetKeyDown(KeyCode.Space);
 
             // Wheel penalty based on detached tires
             float tireFactor = (remainingTireCount / 4.0f);
@@ -116,7 +116,7 @@ namespace VehicleCoinCollector
             {
                 lastHitTime = Time.time;
                 TakeIntegrityDamage(10);
-                if (AudioManager.Instance != null) AudioManager.Instance.PlayHitSound();
+                if (AudioManager.Instance != null) AudioManager.Instance.PlayObstacleHitSound();
 
                 // Knockback
                 Vector3 knockbackDir = (transform.position - collision.contacts[0].point).normalized;
@@ -181,7 +181,6 @@ namespace VehicleCoinCollector
 
             if (AudioManager.Instance != null) AudioManager.Instance.PlayExplosionSound();
 
-            // Detach remaining tires & roof
             while (remainingTireCount > 0) DetachOneTire();
 
             if (roofObject != null)

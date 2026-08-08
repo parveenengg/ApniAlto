@@ -100,7 +100,7 @@ namespace VehicleCoinCollector
                     if (RaceManager.Instance != null)
                     {
                         RaceManager.Instance.StopTimer();
-                        RaceManager.Instance.SaveBestTime(RaceManager.Instance.RaceTimer);
+                        // RaceManager.Instance.SaveBestTime(RaceManager.Instance.RaceTimer);
                     }
                     if (GameManager.Instance != null)
                     {

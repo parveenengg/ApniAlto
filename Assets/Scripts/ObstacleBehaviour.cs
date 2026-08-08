@@ -63,12 +63,16 @@ namespace VehicleCoinCollector
                 }
 
                 // Apply damage
-                vehicle.TakeDamage(damageToPlayer);
+                vehicle.TakeIntegrityDamage(damageToPlayer);
 
-                // Calculate pushback direction away from obstacle center
-                Vector3 knockbackDir = (collision.gameObject.transform.position - transform.position).normalized;
-                knockbackDir.y = 0.2f; // slight upward bounce
-                vehicle.ApplyKnockback(knockbackDir, knockbackForce);
+                // Calculate pushback direction away from obstacle center and apply knockback
+                Rigidbody vehicleRb = vehicle.GetComponent<Rigidbody>();
+                if (vehicleRb != null)
+                {
+                    Vector3 knockbackDir = (collision.gameObject.transform.position - transform.position).normalized;
+                    knockbackDir.y = 0.2f; // slight upward bounce
+                    vehicleRb.AddForce(knockbackDir * knockbackForce, ForceMode.Impulse);
+                }
             }
         }
     }
