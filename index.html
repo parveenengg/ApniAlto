@@ -27,9 +27,6 @@
             left: 0;
         }
 
-        /* ---------------------------------------------------- */
-        /* MAIN DASHBOARD UI OVERLAY                            */
-        /* ---------------------------------------------------- */
         #app-dashboard {
             position: absolute;
             top: 0;
@@ -47,7 +44,6 @@
             pointer-events: none;
         }
 
-        /* Left Main Navigation Sidebar */
         .sidebar {
             width: 220px;
             height: 100%;
@@ -142,7 +138,6 @@
             box-shadow: 0 4px 12px rgba(37, 99, 235, 0.4);
         }
 
-        /* Workspace Viewport */
         .viewport {
             flex: 1;
             display: flex;
@@ -152,7 +147,6 @@
             overflow-y: auto;
         }
 
-        /* Top Header Bar */
         .top-header {
             display: flex;
             justify-content: space-between;
@@ -204,7 +198,6 @@
             cursor: pointer;
         }
 
-        /* SCREEN VIEWS CONTAINER */
         .screen-view {
             display: none;
             width: 100%;
@@ -215,9 +208,6 @@
             display: flex;
         }
 
-        /* ---------------------------------------------------- */
-        /* 1. HOME SCREEN LAYOUT                                */
-        /* ---------------------------------------------------- */
         .logo-center {
             display: flex;
             justify-content: center;
@@ -317,9 +307,6 @@
             background: #2563eb;
         }
 
-        /* ---------------------------------------------------- */
-        /* 2. GARAGE SCREEN LAYOUT                              */
-        /* ---------------------------------------------------- */
         .garage-container {
             display: flex;
             gap: 16px;
@@ -415,9 +402,6 @@
             gap: 6px;
         }
 
-        /* ---------------------------------------------------- */
-        /* 3. SHOP SCREEN LAYOUT                                */
-        /* ---------------------------------------------------- */
         .shop-container {
             display: flex;
             gap: 16px;
@@ -483,9 +467,6 @@
             cursor: pointer;
         }
 
-        /* ---------------------------------------------------- */
-        /* 4. MAP SELECTION SCREEN LAYOUT                       */
-        /* ---------------------------------------------------- */
         .map-mode-header {
             display: flex;
             gap: 12px;
@@ -529,9 +510,6 @@
             font-size: 24px; color: #94a3b8;
         }
 
-        /* ---------------------------------------------------- */
-        /* 5. SETTINGS - CONTROLS SCREEN LAYOUT                 */
-        /* ---------------------------------------------------- */
         .settings-container {
             display: flex;
             gap: 20px;
@@ -598,9 +576,6 @@
         .toggle-pill.on { background: #22c55e; justify-content: flex-end; }
         .toggle-thumb { width: 20px; height: 20px; background: white; border-radius: 50%; }
 
-        /* ---------------------------------------------------- */
-        /* IN-GAME HUD                                          */
-        /* ---------------------------------------------------- */
         #hud {
             position: absolute; top: 20px; left: 20px;
             display: flex; flex-direction: column; gap: 12px; z-index: 10;
@@ -628,7 +603,6 @@
         .ingame-top-nav { position: absolute; top: 20px; right: 20px; display: flex; gap: 10px; z-index: 10; opacity: 0; pointer-events: none; }
         .ingame-top-nav.active { opacity: 1; pointer-events: auto; }
 
-        /* Modals */
         .modal-backdrop {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(7, 11, 20, 0.85); backdrop-filter: blur(10px);
@@ -682,12 +656,12 @@
             <div class="top-header">
                 <div class="header-currencies">
                     <div class="currency-pill">
-                        🪙 <span id="coin-val">12,850</span>
+                        🪙 <span id="coin-val">100,000,000</span>
                         <div class="plus-btn" onclick="addBonusCoins()">+</div>
                     </div>
                     <div class="currency-pill">
-                        💎 <span id="gem-val">320</span>
-                        <div class="plus-btn">+</div>
+                        💎 <span id="gem-val">100,000,000</span>
+                        <div class="plus-btn" onclick="addBonusGems()">+</div>
                     </div>
                     <div class="header-icon-btn" onclick="navTo('settings')">⚙️</div>
                 </div>
@@ -815,13 +789,13 @@
                         <div class="shop-cards-grid">
                             <div class="shop-card">
                                 <div class="shop-card-icon">🪙</div>
-                                <div class="shop-card-name">COIN PACK<br><span style="font-size:10px; color:#94a3b8;">10,000</span></div>
+                                <div class="shop-card-name">COIN PACK<br><span style="font-size:10px; color:#94a3b8;">10,000,000</span></div>
                                 <button class="shop-price-btn" style="background:#22c55e;" onclick="addBonusCoins()">₹89.00</button>
                             </div>
                             <div class="shop-card">
                                 <div class="shop-card-icon">💎</div>
-                                <div class="shop-card-name">GEM PACK<br><span style="font-size:10px; color:#94a3b8;">500</span></div>
-                                <button class="shop-price-btn" style="background:#22c55e;" onclick="userGems+=500; updateCurrencyUI();">₹179.00</button>
+                                <div class="shop-card-name">GEM PACK<br><span style="font-size:10px; color:#94a3b8;">10,000,000</span></div>
+                                <button class="shop-price-btn" style="background:#22c55e;" onclick="addBonusGems()">₹179.00</button>
                             </div>
                             <div class="shop-card">
                                 <div class="shop-card-icon">🧪</div>
@@ -912,7 +886,7 @@
         </div>
     </div>
 
-    <!-- IN-GAME HUD UI -->
+    <!-- IN-GAME HUD -->
     <div id="hud">
         <div class="hud-card"><span class="score-text" id="score-display">Coins: 0 / 12</span></div>
         <div class="hud-card">
@@ -1009,15 +983,15 @@
             });
         }
 
-        // Vehicles & State
-        let userGoldCoins = 12850;
-        let userGems = 320;
+        // UNLIMITED MONEY & GEMS (100,000,000)
+        let userGoldCoins = 100000000;
+        let userGems = 100000000;
 
         const carsCatalog = [
             { id: 'mustang', name: 'BLAZE GT', cost: 0, unlocked: true, icon: '🏎️', color: 0xd97706, roofColor: 0x000000, speed: 6.5, accel: 5.0, handling: 6.0, braking: 5.5 },
             { id: 'verna', name: 'BLUE THUNDER', cost: 15, unlocked: true, icon: '🚘', color: 0x2563eb, roofColor: 0x1e293b, speed: 7.2, accel: 6.0, handling: 6.5, braking: 6.0 },
-            { id: 'lamborghini', name: 'VIPER R', cost: 50, unlocked: false, icon: '🏎️', color: 0xeab308, roofColor: 0x0f172a, speed: 9.5, accel: 9.0, handling: 8.5, braking: 8.0 },
-            { id: 'alto', name: 'WHITE SEDAN', cost: 2, unlocked: false, icon: '🚗', color: 0xf8fafc, roofColor: 0x1e293b, speed: 6.0, accel: 5.5, handling: 6.0, braking: 5.5 }
+            { id: 'lamborghini', name: 'VIPER R', cost: 50, unlocked: true, icon: '🏎️', color: 0xeab308, roofColor: 0x0f172a, speed: 9.5, accel: 9.0, handling: 8.5, braking: 8.0 },
+            { id: 'alto', name: 'WHITE SEDAN', cost: 2, unlocked: true, icon: '🚗', color: 0xf8fafc, roofColor: 0x1e293b, speed: 6.0, accel: 5.5, handling: 6.0, braking: 5.5 }
         ];
         let activeCarId = 'mustang';
 
@@ -1033,8 +1007,10 @@
             if (screenId === 'garage') renderGaragePanel();
         }
 
-        function addBonusCoins() { userGoldCoins += 1000; updateCurrencyUI(); }
-        function claimDailyReward() { userGoldCoins += 500; updateCurrencyUI(); alert('🎉 Daily Reward Claimed: +500 Coins!'); }
+        function addBonusCoins() { userGoldCoins += 10000000; updateCurrencyUI(); }
+        function addBonusGems() { userGems += 10000000; updateCurrencyUI(); }
+        function claimDailyReward() { userGoldCoins += 5000000; updateCurrencyUI(); alert('🎉 Daily Reward Claimed: +5,000,000 Coins!'); }
+        
         function updateCurrencyUI() {
             document.getElementById('coin-val').innerText = userGoldCoins.toLocaleString();
             document.getElementById('gem-val').innerText = userGems.toLocaleString();
@@ -1054,7 +1030,7 @@
                         <span class="car-thumb-icon">${car.icon}</span>
                         <span style="font-weight:800; font-size:12px;">${car.name}</span>
                     </div>
-                    <div>${isActive ? '✓' : car.unlocked ? '' : '🔒'}</div>
+                    <div>${isActive ? '✓' : ''}</div>
                 `;
                 listEl.appendChild(item);
             });
@@ -1072,18 +1048,6 @@
         }
 
         function selectGarageCar(id) {
-            const car = carsCatalog.find(c => c.id === id);
-            if (!car) return;
-            if (!car.unlocked) {
-                if (userGoldCoins >= car.cost) {
-                    userGoldCoins -= car.cost;
-                    car.unlocked = true;
-                    updateCurrencyUI();
-                } else {
-                    alert(`Need 🪙 ${car.cost} coins to unlock ${car.name}!`);
-                    return;
-                }
-            }
             activeCarId = id;
             renderGaragePanel();
             rebuildPlayerVehicle();
@@ -1098,8 +1062,6 @@
                 updateCurrencyUI();
                 renderGaragePanel();
                 alert(`🚀 ${currentCar.name} Upgraded!`);
-            } else {
-                alert('Not enough coins for Upgrade (Need 🪙 2,000)');
             }
         }
 
@@ -1114,8 +1076,6 @@
                 userGoldCoins -= cost;
                 updateCurrencyUI();
                 alert(`Purchased ${name}!`);
-            } else {
-                alert('Not enough currency!');
             }
         }
 
@@ -1181,6 +1141,7 @@
             });
             window.addEventListener('resize', onWindowResize);
 
+            updateCurrencyUI();
             updateIntegrityUI();
             animate();
         }
@@ -1386,7 +1347,7 @@
                 c.mesh.rotation.z += 0.04; c.mesh.position.y = c.initialY + Math.sin(now + c.initialY) * 0.2;
                 const dx = car.position.x - c.mesh.position.x, dy = car.position.y - c.mesh.position.y, dz = car.position.z - c.mesh.position.z;
                 if (Math.sqrt(dx*dx + dy*dy + dz*dz) < 2.0) {
-                    c.collected = true; scene.remove(c.mesh); score++; userGoldCoins += 10; playCoinSound();
+                    c.collected = true; scene.remove(c.mesh); score++; userGoldCoins += 1000; playCoinSound();
                     document.getElementById('score-display').innerText = `Coins: ${score} / ${totalCoins}`; updateCurrencyUI();
                 }
             });
